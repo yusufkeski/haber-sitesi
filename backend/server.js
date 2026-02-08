@@ -1,26 +1,34 @@
-// backend/db.js
-const mysql = require('mysql2');
+// backend/server.js
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 require('dotenv').config();
 
-// Bağlantı havuzu oluşturuyoruz (Performans için önemli)
-const pool = mysql.createPool({
-    host: 'localhost',      // WAMP Server senin bilgisayarında
-    user: 'root',           // WAMP varsayılan kullanıcısı
-    password: '',           // WAMP varsayılan şifresi (boş ise tırnakları boş bırak)
-    database: 'nerik_db',   // HeidiSQL'de az önce açtığımız veritabanı adı
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+// Rota dosyasını çağır
+const authRoutes = require('./routes/authRoutes');
+const newsRoutes = require('./routes/newsRoutes');
+const path = require('path');
+
+const app = express();
+
+app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(express.json());
+
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+// Rotaları tanımla
+app.use('/api/auth', authRoutes);
+app.use('/api/news', newsRoutes);
+
+app.get('/', (req, res) => {
+    res.json({ message: 'Nerik Medya API Çalışıyor! 🚀' });
 });
 
-// Bağlantıyı test edelim
-pool.getConnection((err, connection) => {
-    if (err) {
-        console.error('❌ Veritabanına bağlanılamadı:', err.message);
-    } else {
-        console.log('✅ WAMP MySQL veritabanına başarıyla bağlandı!');
-        connection.release();
-    }
-});
+const PORT = process.env.PORT || 3000;
 
-module.exports = pool.promise(); // Promise yapısı ile dışarı açıyoruz (Modern kullanım)
+app.listen(PORT, () => {
+    console.log(`Sunucu ${PORT} portunda çalışıyor...`);
+});
