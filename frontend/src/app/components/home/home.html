@@ -1,0 +1,188 @@
+<div class="top-bar py-2 d-none d-md-block bg-dark text-white">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3 small">
+            <span class="opacity-75">8 Şubat 2026 Pazar</span>
+            <span class="opacity-25">|</span>
+            
+            <span class="fw-bold text-warning d-flex align-items-center" *ngIf="weather$ | async as w; else loadingWeather">
+    <i class="fas me-2" [ngClass]="w.icon"></i> 
+    Vezirköprü {{ w.temp }}°C
+</span>
+
+<ng-template #loadingWeather>
+    <span class="fw-bold text-warning opacity-50">
+        <i class="fas fa-spinner fa-spin me-2"></i> Yükleniyor...
+    </span>
+</ng-template>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="https://www.facebook.com/ulucinardijitalmedya" target="_blank" class="social-btn" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://x.com/ulucinardijitalmedya" target="_blank" class="social-btn" title="X (Twitter)">
+    <svg xmlns="http://www.w3.org/2000/svg" height="14" width="14" viewBox="0 0 512 512" fill="white">
+        <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/>
+    </svg>
+</a>
+            <a href="https://www.instagram.com/ulucinardijitalmedya" target="_blank" class="social-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.tiktok.com/@ulucinardijitalmedya" target="_blank" class="social-btn" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://www.youtube.com/@ulucinardijitalmedya" target="_blank" class="social-btn" title="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+</div>
+
+<header class="py-4 bg-white border-bottom">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4 text-center text-md-start">
+                <a href="/" class="d-inline-flex align-items-center text-decoration-none">
+                    <div class="logo-box me-3">N</div>
+                    <div class="d-flex flex-column justify-content-center text-start">
+                        <span class="h2 fw-bold mb-0 brand-title lh-1">NERİK</span>
+                        <span class="brand-subtitle">DİJİTAL MEDYA</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-8">
+                <div class="d-flex align-items-center justify-content-center bg-light border rounded-4 mx-auto" style="height: 90px; max-width: 728px; border-style: dashed !important;">
+                    <span class="text-secondary small fw-bold text-uppercase">REKLAM ALANI</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav class="navbar-custom bg-white shadow-sm sticky-top">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center" style="height: 60px;">
+            <div class="d-flex h-100">
+                <a href="/" class="nav-link-custom">ANASAYFA</a>
+                <a href="#" class="nav-link-custom">GÜNDEM</a>
+                <a href="#" class="nav-link-custom">SPOR</a>
+            </div>
+
+            <div class="search-box ms-auto me-3 d-none d-md-block">
+    <input type="text" class="search-input" placeholder="Haber ara...">
+    <a href="#" class="search-btn">
+        <i class="fas fa-search"></i>
+    </a>
+</div>
+
+            <a href="/login" class="btn btn-sm btn-outline-primary ms-3 d-none d-md-block">Giriş</a>
+        </div>
+    </div>
+</nav>
+
+<div class="breaking-news-bar bg-primary text-white overflow-hidden position-relative" style="height: 40px;">
+    <div class="container-fluid h-100 p-0 d-flex"> <div class="breaking-label bg-dark px-4 h-100 d-flex align-items-center fw-bold small fst-italic position-relative z-2">
+            <span class="spinner-grow spinner-grow-sm text-danger me-2"></span> SON DAKİKA
+        </div>
+
+        <div class="marquee-wrapper w-100 d-flex align-items-center overflow-hidden position-relative">
+            <div class="marquee-content fw-bold small">
+                {{ breakingNews }}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<main class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-8">
+            
+            <div *ngIf="sliderNews.length > 0" class="bg-dark rounded-4 mb-5 position-relative overflow-hidden" style="height: 450px;">
+                <img [src]="baseUrl + sliderNews[0].image_path" class="w-100 h-100 object-fit-cover" alt="Manşet">
+                <div class="position-absolute bottom-0 start-0 w-100 p-4" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                    <h2 class="text-white fw-bold mb-1">{{ sliderNews[0].title }}</h2>
+                </div>
+            </div>
+
+            <div *ngIf="sliderNews.length === 0" class="bg-secondary rounded-4 mb-5 d-flex align-items-center justify-content-center text-white" style="height: 450px;">
+                <p>Henüz manşet haber girilmedi.</p>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+                <h3 class="mb-0 text-secondary border-start border-4 border-primary ps-3">Günün Öne Çıkanları</h3>
+            </div>
+
+            <div class="d-flex flex-column gap-4">
+                
+                <article *ngFor="let news of latestNews" class="bg-white rounded-4 shadow-sm overflow-hidden d-flex flex-column flex-md-row">
+                    <div class="col-md-5 position-relative bg-light d-flex align-items-center justify-content-center overflow-hidden" style="min-height: 200px;">
+                        <span class="badge bg-primary position-absolute top-0 start-0 m-3 z-1">{{ news.category_name || 'Gündem' }}</span>
+                        
+                        <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0">
+                        
+                        <i *ngIf="!news.image_path" class="fas fa-newspaper fa-3x text-secondary opacity-25"></i>
+                    </div>
+
+                    <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
+                        <h4 class="fw-bold text-secondary mb-2">{{ news.title }}</h4>
+                        <p class="text-muted small mb-3 line-clamp-2">{{ news.summary }}</p>
+                        
+                        <div class="d-flex align-items-center justify-content-between mt-auto">
+                            <span class="small text-muted"><i class="far fa-clock me-1"></i> {{ news.created_at | date:'dd.MM.yyyy' }}</span>
+                            <a [routerLink]="['/haber', news.slug]" class="text-primary small fw-bold text-decoration-none cursor-pointer">
+                                <i class="fas fa-arrow-right me-1"></i> Haberi Oku
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="bg-white d-flex align-items-center justify-content-center border rounded-4 mb-4 shadow-sm" style="height: 300px; border-style: dashed !important;">
+    <span class="text-secondary small fw-bold">DİKEY REKLAM ALANI</span>
+</div>
+
+            <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+        <h5 class="fw-bold mb-0 text-secondary border-start border-4 border-primary ps-3">Köşe Yazarları</h5>
+    </div>
+
+    <div class="text-center text-muted py-5 bg-light rounded-3 border border-light-subtle">
+        <i class="fas fa-feather-alt fa-2x mb-3 opacity-50"></i>
+        <p class="mb-0 small fw-bold">Henüz köşe yazısı girilmedi.</p>
+    </div>
+
+    </div>
+        </div>
+    </div>
+</main>
+<footer class="bg-white border-top py-5 mt-auto">
+    <div class="container text-center">
+        
+        <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+            <div class="logo-box mb-3" style="width: 60px; height: 60px; font-size: 2rem;">N</div>
+            <h3 class="fw-bold text-secondary mb-0">NERİK</h3>
+            <span class="text-primary fw-bold small letter-spacing-2" style="letter-spacing: 3px;">DİJİTAL MEDYA</span>
+        </div>
+
+        <p class="text-muted small col-md-6 mx-auto mb-4">
+            Vezirköprü'nün en güncel, en hızlı ve en tarafsız dijital haber platformu.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3 mb-4">
+            <a href="https://www.facebook.com/ulucinardijitalmedya" class="btn btn-light btn-sm rounded-circle text-secondary shadow-sm"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://x.com/ulucinardijitalmedya" class="btn btn-light btn-sm rounded-circle text-secondary shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" height="14" width="14" viewBox="0 0 512 512" fill="#6c757d">
+        <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/>
+    </svg></a>
+            <a href="https://www.instagram.com/ulucinardijitalmedya" class="btn btn-light btn-sm rounded-circle text-secondary shadow-sm"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.tiktok.com/@ulucinardijitalmedya" class="btn btn-light btn-sm rounded-circle text-secondary shadow-sm"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://www.youtube.com/@ulucinardijitalmedya" class="btn btn-light btn-sm rounded-circle text-secondary shadow-sm"><i class="fab fa-youtube"></i></a>
+        </div>
+
+        <div class="border-top pt-4">
+            <p class="small text-muted mb-0">
+                &copy; 2026 Nerik Dijital Medya. Tüm Hakları Saklıdır.
+            </p>
+        </div>
+    </div>
+</footer>
+
+<a href="https://wa.me/905xxxxxxxxx" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp fa-lg"></i>
+    <span class="d-none d-md-inline ms-2">İhbar Hattı</span>
+</a>

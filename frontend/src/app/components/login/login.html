@@ -1,0 +1,21 @@
+<div class="login-page">
+    <div class="login-card shadow text-center">
+        <h3 class="fw-bold mb-4">Nerik Yönetici Girişi</h3>
+        
+        <div class="mb-3">
+            <input type="text" [(ngModel)]="username" class="form-control" placeholder="Kullanıcı Adı">
+        </div>
+
+        <div class="mb-3">
+            <input type="password" [(ngModel)]="password" class="form-control" placeholder="Şifre">
+        </div>
+
+        <button (click)="onLogin()" class="btn btn-danger w-100 py-2 fw-bold">
+            <i class="fa fa-sign-in me-2"></i> Giriş Yap
+        </button>
+
+        <div *ngIf="errorMessage" class="alert alert-danger mt-3 small">
+            {{ errorMessage }}
+        </div>
+    </div>
+</div>

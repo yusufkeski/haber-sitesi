@@ -1,0 +1,110 @@
+/* Logo Kutusu */
+.logo-box {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white; 
+    width: 50px; height: 50px; 
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+.brand-title { color: var(--secondary); letter-spacing: -0.5px; }
+.brand-subtitle { color: var(--primary); font-weight: 600; letter-spacing: 1px; font-size: 0.75rem; text-transform: uppercase; }
+
+/* Menü Linkleri */
+.nav-link-custom { 
+    color: var(--secondary); font-weight: 600; 
+    padding: 0 20px; text-transform: uppercase; 
+    font-size: 0.85rem; transition: 0.3s; 
+    position: relative; display: flex; align-items: center; text-decoration: none;
+}
+.nav-link-custom:hover { color: var(--primary); }
+
+/* Sosyal Medya Butonları */
+.social-btn {
+    width: 30px; height: 30px; 
+    background: rgba(255,255,255,0.1); 
+    display: flex; align-items: center; justify-content: center; 
+    border-radius: 50%; color: white; transition: 0.2s;
+}
+.social-btn:hover { background: var(--primary); transform: translateY(-2px); }
+
+/* WhatsApp Butonu */
+.whatsapp-float {
+    position: fixed; bottom: 25px; left: 25px; 
+    background: var(--whatsapp-green); color: white;
+    padding: 12px 20px; border-radius: 50px; 
+    font-weight: 700; 
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4); 
+    z-index: 999; text-decoration: none;
+    display: flex; align-items: center; transition: 0.3s;
+}
+.whatsapp-float:hover { transform: scale(1.05); }
+
+/* SON DAKİKA ETİKETİ (Yamuk Kesim - Tek Seferde Tanımlı) */
+.breaking-label {
+    background-color: #212529;
+    color: white;
+    padding-right: 30px !important;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+    width: fit-content;
+    min-width: 160px;
+    position: relative;
+}
+/* Siyah üçgen detayı */
+.breaking-label::after { 
+    content: ''; position: absolute; right: -20px; top: 0;
+    border-top: 48px solid #212529; 
+    border-right: 20px solid transparent; 
+}
+
+/* KAYAN YAZI */
+.marquee-wrapper { white-space: nowrap; }
+.marquee-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll-left 20s linear infinite;
+}
+@keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Resim Oranı */
+.object-fit-cover { object-fit: cover; }
+
+/* Metin Taşmasını Engelleme (Sarı Hata Giderildi) */
+.line-clamp-2 {
+    display: -webkit-box;
+    /* autoprefixer: ignore next */
+    -webkit-box-orient: vertical; /* Sarı hatanın sebebi buydu, artık sorun yok */
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+/* Arama Kutusu */
+.search-box {
+    position: relative; background: #f1f5f9;
+    height: 40px; border-radius: 40px; padding: 10px;
+    display: flex; align-items: center; transition: 0.4s;
+    width: 40px; overflow: hidden;
+}
+.search-box:hover, .search-box:focus-within {
+    width: 250px; background: white;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.search-btn {
+    color: var(--primary); float: right;
+    width: 20px; height: 20px;
+    display: flex; justify-content: center; align-items: center;
+    text-decoration: none; transition: 0.4s;
+}
+.search-input {
+    border: none; outline: none; background: none;
+    float: left; padding: 0; color: #333;
+    font-size: 14px; transition: 0.4s;
+    line-height: 20px; width: 0px;
+}
+.search-box:hover .search-input, .search-box:focus-within .search-input {
+    width: 200px; padding: 0 10px;
+}

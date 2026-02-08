@@ -1,0 +1,85 @@
+/* --- Admin Paneli STİLLERİ (Değişken Yok, Doğrudan Renk) --- */
+
+/* Ana Kapsayıcı */
+.admin-wrapper {
+    display: flex;
+    background-color: #f8f9fa !important; /* Açık gri zemin */
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Sidebar (Sol Menü) - Rengi #0f172a (Lacivert) Olarak Zorluyoruz */
+.sidebar { 
+    width: 280px; 
+    height: 100vh; 
+    position: fixed; 
+    top: 0;
+    left: 0;
+    background-color: #0f172a !important; /* Koyu Lacivert */
+    color: white !important; /* Yazılar Beyaz */
+    z-index: 1000;
+    box-shadow: 5px 0 25px rgba(0,0,0,0.05);
+    overflow-y: auto;
+}
+
+/* Sidebar Marka Alanı */
+.sidebar-brand {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Menü Linkleri */
+.sidebar .nav-link { 
+    color: rgba(255, 255, 255, 0.7) !important; /* Hafif saydam beyaz */
+    padding: 15px 20px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    margin: 5px 10px;
+}
+
+/* Linkin Üzerine Gelince */
+.sidebar .nav-link:hover, .sidebar .nav-link.active { 
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    padding-left: 25px !important; /* Hafif sağa kayma efekti */
+}
+
+/* İkonlar */
+.sidebar .nav-link i {
+    width: 25px;
+    text-align: center;
+}
+
+/* Sağ İçerik Alanı */
+.main-content { 
+    margin-left: 280px; 
+    padding: 30px;
+    width: calc(100% - 280px);
+    background-color: #f8f9fa !important;
+}
+
+/* Yükleme Kutusu (Image Upload) */
+.image-upload-box {
+    transition: all 0.3s border-color;
+    border: 2px dashed #cbd5e1;
+    background-color: #ffffff;
+}
+.image-upload-box:hover {
+    border-color: #2563eb !important; /* Mavi Çerçeve */
+    background-color: #eff6ff !important;
+}
+
+/* Cropper (Kırpma) Alanı */
+.cropper-container {
+    width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #333;
+}

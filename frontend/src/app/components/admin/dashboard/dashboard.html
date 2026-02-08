@@ -1,0 +1,177 @@
+<div class="admin-wrapper d-flex">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand text-center py-4 border-bottom border-secondary">
+            <span class="text-primary fw-bold fs-4">N</span><span class="text-white fw-bold fs-4">ERİK</span>
+            <small class="d-block text-muted" style="font-size: 0.7rem;">YÖNETİM PANELİ</small>
+        </div>
+        
+        <nav class="mt-4 px-2 d-flex flex-column gap-1">
+            <a (click)="switchTab('news')" [class.active]="activeTab === 'news'" class="nav-link rounded p-3 text-white-50 hover-text-white">
+                <i class="fas fa-newspaper me-3 text-primary"></i> Haberler
+            </a>
+            <a (click)="switchTab('slider')" [class.active]="activeTab === 'slider'" class="nav-link rounded p-3 text-white-50 hover-text-white">
+                <i class="fas fa-images me-3 text-warning"></i> Manşetler
+            </a>
+            <hr class="border-secondary my-3">
+            <a routerLink="/" class="nav-link rounded p-3 text-info">
+                <i class="fas fa-external-link-alt me-3"></i> Siteyi Gör
+            </a>
+            <a (click)="onLogout()" class="nav-link rounded p-3 text-danger mt-2" style="cursor: pointer;">
+                <i class="fas fa-sign-out-alt me-3"></i> Güvenli Çıkış
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content flex-grow-1 bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 rounded-4 shadow-sm">
+            <div>
+                <h4 class="fw-bold text-dark mb-0">
+                    {{ activeTab === 'slider' ? 'MANŞET YÖNETİMİ' : 'HABER YÖNETİMİ' }}
+                </h4>
+                <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Yönetici' }}</small>
+            </div>
+        </div>
+
+        <div *ngIf="activeTab === 'news'" class="fade-in">
+            <div class="mb-4" *ngIf="!showNewsForm">
+                <button class="btn btn-primary px-4 py-3 fw-bold shadow-sm rounded-3 hover-scale" (click)="showNewsForm = true">
+                    <i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle
+                </button>
+            </div>
+
+            <div class="card border-0 shadow-sm p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showNewsForm">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="fas fa-edit me-2"></i> {{ isEditing ? 'Haberi Düzenle' : 'Yeni Haber Oluştur' }}
+                    </h5>
+                    <button class="btn-close" (click)="resetForm()"></button>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary">HABER BAŞLIĞI</label>
+                            <input type="text" [(ngModel)]="newsData.title" class="form-control form-control-lg fw-bold">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">İÇERİK</label>
+                            <div class="bg-white border rounded-3 overflow-hidden">
+                                <quill-editor [(ngModel)]="newsData.content" [styles]="{height: '350px'}"></quill-editor>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card bg-light border-0 p-4 rounded-4 h-100">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">KATEGORİ</label>
+                                <select [(ngModel)]="newsData.category" class="form-select form-select-lg">
+                                    <option value="GÜNDEM">GÜNDEM</option>
+                                    <option value="EKONOMİ">EKONOMİ</option>
+                                    <option value="SPOR">SPOR</option>
+                                    <option value="TEKNOLOJİ">TEKNOLOJİ</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">GÖRSEL</label>
+                                <input type="file" #fileInput (change)="onFileSelected($event)" class="d-none" accept="image/*">
+                                <div class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer" (click)="fileInput.click()">
+                                    <div *ngIf="!selectedFile && !newsData.image">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                        <h6 class="fw-bold text-dark">Resim Seç</h6>
+                                    </div>
+                                    <div [class.d-none]="!selectedFile && !newsData.image">
+                                        <img #imageElement class="img-fluid rounded">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mt-auto">
+                                <button (click)="saveNews()" class="btn btn-primary fw-bold py-3">
+                                    {{ isEditing ? 'GÜNCELLE' : 'YAYINLA' }}
+                                </button>
+                                <button (click)="resetForm()" class="btn btn-outline-secondary">VAZGEÇ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small text-uppercase">
+                            <tr>
+                                <th class="ps-4 py-3">Görsel</th>
+                                <th>Başlık</th>
+                                <th>Kategori</th>
+                                <th class="text-end pe-4">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let news of newsList">
+                                <td class="ps-4">
+                                    <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="rounded shadow-sm object-fit-cover" style="width: 60px; height: 40px;">
+                                </td>
+                                <td class="fw-bold text-dark">{{ news.title | uppercase }}</td>
+                                <td><span class="badge bg-primary-subtle text-primary">{{ news.category_name || news.category }}</span></td>
+                                <td class="text-end pe-4">
+                                    <button (click)="editNews(news)" class="btn btn-sm btn-light text-warning me-2"><i class="fas fa-edit"></i></button>
+                                    <button (click)="deleteNews(news.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="activeTab === 'slider'" class="fade-in">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3 border-bottom border-warning border-3">
+                            <h6 class="fw-bold m-0 text-warning"><i class="fas fa-star me-2"></i> YAYINDAKİ MANŞETLER</h6>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <tbody>
+                                    <tr *ngFor="let news of activeSliderNews">
+                                        <td class="ps-3"><img [src]="baseUrl + news.image_path" class="rounded" style="width: 70px; height: 45px;"></td>
+                                        <td class="fw-bold small">{{ news.title }}</td>
+                                        <td class="text-end pe-3">
+                                            <button (click)="toggleNewsStatus(news.id, 'is_slider', false)" class="btn btn-sm btn-outline-danger fw-bold">Çıkar</button>
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="activeSliderNews.length === 0">
+                                        <td colspan="3" class="text-center py-4 text-muted">Hiç manşet yok.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm h-100 bg-light">
+                        <div class="card-header bg-transparent py-3 border-bottom">
+                            <h6 class="fw-bold m-0 text-secondary"><i class="fas fa-list me-2"></i> LİSTEDEN SEÇ & EKLE</h6>
+                        </div>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <tbody>
+                                    <tr *ngFor="let news of candidateNews">
+                                        <td class="ps-3"><i class="fas fa-newspaper text-muted"></i></td>
+                                        <td class="fw-bold small text-secondary">{{ news.title }}</td>
+                                        <td class="text-end pe-3">
+                                            <button (click)="toggleNewsStatus(news.id, 'is_slider', true)" class="btn btn-sm btn-success fw-bold">MANŞET YAP</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

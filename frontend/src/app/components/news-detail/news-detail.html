@@ -1,0 +1,50 @@
+<div class="container py-5">
+    
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Haber yükleniyor...</p>
+    </div>
+
+    <div *ngIf="!loading && news" class="row justify-content-center fade-in">
+        <div class="col-lg-9">
+            
+            <div class="mb-4">
+                <a routerLink="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm hover-scale">
+                    <i class="fas fa-arrow-left me-2"></i> Anasayfaya Dön
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <span class="badge bg-primary px-3 py-2">{{ news.category_name || 'Gündem' }}</span>
+                <span class="text-muted small"><i class="far fa-clock me-1"></i> {{ news.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
+                <span class="text-muted small"><i class="far fa-eye me-1"></i> {{ news.view_count }} okuma</span>
+            </div>
+
+            <h1 class="fw-bold text-dark mb-4 display-6">{{ news.title }}</h1>
+
+            <p class="lead fw-bold text-secondary mb-4">{{ news.summary }}</p>
+
+            <div class="mb-5 rounded-4 overflow-hidden shadow-sm position-relative">
+                <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 object-fit-cover" style="max-height: 500px;" alt="{{ news.title }}">
+            </div>
+
+            <div class="news-content fs-5 text-dark lh-lg" [innerHTML]="safeContent"></div>
+
+            <div class="mt-5 p-4 bg-light rounded-4 border border-light-subtle d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-4 fw-bold" style="width: 50px; height: 50px;">
+                    {{ news.author_name?.charAt(0) || 'A' }}
+                </div>
+                <div>
+                    <span class="d-block small text-muted text-uppercase fw-bold">Haber Editörü</span>
+                    <span class="fw-bold text-dark">{{ news.author_name || 'Editör' }}</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !news" class="text-center py-5">
+        <h3 class="fw-bold text-secondary">Haber Bulunamadı</h3>
+        <a routerLink="/" class="btn btn-primary mt-3">Anasayfaya Dön</a>
+    </div>
+</div>

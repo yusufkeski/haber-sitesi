@@ -1,1 +1,19 @@
-/* You can add global styles to this file, and also import other style files */
+body:not(.admin-body) {
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background-color: #f1f5f9; 
+    color: #334155;
+    overflow-x: hidden;
+}
+
+body:not(.admin-body) h1, 
+body:not(.admin-body) h2, 
+body:not(.admin-body) h3, 
+body:not(.admin-body) h4, 
+body:not(.admin-body) h5, 
+body:not(.admin-body) h6 { 
+    font-family: 'Outfit', sans-serif; 
+    color: #0f172a;
+    font-weight: 700; 
+}
+
+a { text-decoration: none; }
