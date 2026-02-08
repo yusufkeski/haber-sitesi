@@ -1,21 +1,21 @@
-// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
     try {
-        // Token genelde "Bearer <token>" şeklinde gelir
+        // Token'ı header'dan al ("Bearer <token>" formatında)
         const token = req.headers.authorization.split(' ')[1];
         
-        // Token'ı şifreyle çözmeye çalış
+        // Şifreyi çöz
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Çözülen veriyi isteğe ekle (req.userData içinde id ve role olacak)
+        // Verileri isteğe ekle
         req.userData = { 
             userId: decodedToken.id, 
-            role: decodedToken.role 
+            role: decodedToken.role,
+            permissions: decodedToken.permissions 
         };
         
-        next(); // Her şey yolunda, geçebilirsin
+        next();
     } catch (error) {
         res.status(401).json({ message: 'Yetkisiz erişim! Lütfen giriş yapın.' });
     }

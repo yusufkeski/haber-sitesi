@@ -1,0 +1,41 @@
+<div class="container py-5">
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!loading && post" class="row justify-content-center fade-in">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <a routerLink="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-2"></i> Anasayfaya Dön
+                </a>
+            </div>
+
+            <h1 class="fw-bold text-dark mb-4 display-6">{{ post.title }}</h1>
+
+            <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-4 border">
+                <img *ngIf="post.author_image" [src]="baseUrl + post.author_image" 
+                     class="rounded-circle border border-2 border-white shadow-sm" width="60" height="60" style="object-fit: cover;">
+                
+                <div *ngIf="!post.author_image" class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 60px; height: 60px;">
+                    {{ post.author_name?.charAt(0) }}
+                </div>
+                
+                <div>
+                    <span class="d-block text-muted small text-uppercase fw-bold">KÖŞE YAZARI</span>
+                    <h5 class="m-0 fw-bold text-dark">{{ post.author_name }}</h5>
+                </div>
+                <div class="ms-auto text-muted small">
+                    <i class="far fa-calendar-alt me-1"></i> {{ post.created_at | date:'dd.MM.yyyy' }}
+                </div>
+            </div>
+
+            <div class="news-content fs-5 text-dark lh-lg" [innerHTML]="safeContent"></div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !post" class="text-center py-5">
+        <h3>Yazı Bulunamadı</h3>
+        <a routerLink="/" class="btn btn-primary mt-3">Anasayfa</a>
+    </div>
+</div>

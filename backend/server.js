@@ -1,11 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const videoController = require('./controllers/videoController');
+const multer = require('multer');
+const fs = require('fs');
 
-// Rotaları içe aktar (Senin orijinal dosyaların)
+// KONTROLCÜLER (Beyinler)
 const authRoutes = require('./routes/authRoutes');
 const newsRoutes = require('./routes/newsRoutes');
+const contentController = require('./controllers/contentController');
+const userController = require('./controllers/userController');
+
+// MİDDLEWARE (Güvenlik Görevlisi) - İŞTE EKSİK OLAN BUYDU!
+const checkAuth = require('./middleware/authMiddleware');
 
 const app = express();
 const PORT = 3000;
@@ -15,22 +21,57 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/videos', videoController.getAllVideos);
-app.post('/api/videos', videoController.addVideo); // (Auth eklenebilir)
-app.delete('/api/videos/:id', videoController.deleteVideo);
-
 // Resim klasörünü dışarı aç
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'))); // DİKKAT: 'public/uploads' değil, direkt 'uploads' olabilir. Kontrol et.
-// NOT: Senin 'newsRoutes.js' dosyan resimleri 'public/uploads/' klasörüne kaydediyor. 
-// O yüzden statik klasör yolunu da ona göre ayarlamalıyız:
-app.use('/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+// --- RESİM YÜKLEME AYARI (MULTER) ---
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = 'public/uploads/';
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); 
+    }
+});
+const upload = multer({ storage: storage });
 
-// 2. ROTALARI TANIMLA
-app.use('/api/auth', authRoutes); // Login ve Register işlemleri burada
-app.use('/api/news', newsRoutes); // Haber ekleme/silme işlemleri burada
+// 2. ANA ROTALAR
+app.use('/api/auth', authRoutes);
+app.use('/api/news', newsRoutes);
+
+// --- 3. İÇERİK YÖNETİMİ ROTALARI ---
+
+// PERSONEL YÖNETİMİ
+app.get('/api/users', userController.getUsers);
+app.post('/api/users', upload.single('image'), userController.addUser);
+app.put('/api/users/:id', upload.single('image'), userController.updateUser);
+app.delete('/api/users/:id', userController.deleteUser);
+
+// VİDEOLAR
+app.get('/api/videos', contentController.getVideos);
+app.post('/api/videos', upload.none(), contentController.addVideo);
+app.delete('/api/videos/:id', contentController.deleteVideo);
+
+// REKLAMLAR
+app.get('/api/ads', contentController.getAds);
+app.post('/api/ads', upload.single('image'), contentController.addAd);
+app.delete('/api/ads/:id', contentController.deleteAd);
+
+// KÖŞE YAZILARI
+// Yazarları ve yazıları herkes görebilir
+app.get('/api/authors', contentController.getAuthors);
+app.get('/api/column-posts', contentController.getColumnPosts);
+app.get('/api/column-posts/:id', contentController.getColumnPostById);
+
+// Yazı eklerken ve silerken GÜVENLİK (checkAuth) lazım!
+app.post('/api/column-posts', checkAuth, upload.none(), contentController.addColumnPost);
+app.delete('/api/column-posts/:id', checkAuth, contentController.deleteColumnPost);
 
 // Sunucuyu Başlat
 app.listen(PORT, () => {
-    console.log(`🚀 Profesyonel Sunucu Aktif: http://localhost:${PORT}`);
+    console.log(`🚀 Sunucu Aktif: http://localhost:${PORT}`);
 });

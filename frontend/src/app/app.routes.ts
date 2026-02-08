@@ -17,5 +17,7 @@ export const routes: Routes = [
     // 3. Dashboard sayfası için route 
     { path: 'admin', component: DashboardComponent },
 
-    { path: 'admin', component: DashboardComponent, canActivate: [authGuard] }
+    { path: 'admin', component: DashboardComponent, canActivate: [authGuard] },
+
+    { path: 'yazi/:id', loadComponent: () => import('./components/column-post-detail/column-post-detail').then(m => m.ColumnPostDetailComponent) },
 ];

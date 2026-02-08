@@ -9,6 +9,346 @@ dist/
 .vscode/
 
 ============================================================
+DOSYA YOLU: nerik_full_backup.sql
+============================================================
+-- --------------------------------------------------------
+-- Sunucu:                       127.0.0.1
+-- Sunucu sürümü:                8.4.7 - MySQL Community Server - GPL
+-- Sunucu İşletim Sistemi:       Win64
+-- HeidiSQL Sürüm:               12.14.0.7170
+-- --------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+-- nerik_db için veritabanı yapısı dökülüyor
+CREATE DATABASE IF NOT EXISTS `nerik_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `nerik_db`;
+
+-- tablo yapısı dökülüyor nerik_db.ads
+CREATE TABLE IF NOT EXISTS `ads` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `target_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `area` enum('header','sidebar','footer') COLLATE utf8mb4_unicode_ci DEFAULT 'sidebar',
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.ads: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `ads` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ads` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.categories
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#2563eb',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.categories: 3 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `categories` DISABLE KEYS */;
+INSERT INTO `categories` (`id`, `name`, `slug`, `color`) VALUES
+	(1, 'Gündem', 'gundem', '#2563eb'),
+	(2, 'Spor', 'spor', '#2563eb'),
+	(3, 'Ekonomi', 'ekonomi', '#2563eb');
+/*!40000 ALTER TABLE `categories` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.column_posts
+CREATE TABLE IF NOT EXISTS `column_posts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `columnist_id` int DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `view_count` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `columnist_id` (`columnist_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.column_posts: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `column_posts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `column_posts` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.columnists
+CREATE TABLE IF NOT EXISTS `columnists` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.columnists: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `columnists` DISABLE KEYS */;
+/*!40000 ALTER TABLE `columnists` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.news
+CREATE TABLE IF NOT EXISTS `news` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `summary` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `content` longtext COLLATE utf8mb4_unicode_ci,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `author_id` int DEFAULT NULL,
+  `status` enum('draft','published','archived') COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
+  `view_count` int DEFAULT '0',
+  `is_breaking` tinyint(1) DEFAULT '0',
+  `is_slider` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`),
+  KEY `category_id` (`category_id`),
+  KEY `author_id` (`author_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.news: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `news` DISABLE KEYS */;
+INSERT INTO `news` (`id`, `title`, `slug`, `summary`, `content`, `image_path`, `category_id`, `author_id`, `status`, `view_count`, `is_breaking`, `is_slider`, `created_at`, `updated_at`) VALUES
+	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 7, 0, 0, '2026-02-08 18:07:34', '2026-02-08 20:21:46'),
+	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p>', '/uploads/1770578141018.jpg', NULL, 2, 'published', 2, 1, 1, '2026-02-08 19:15:41', '2026-02-08 20:21:46');
+/*!40000 ALTER TABLE `news` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.settings
+CREATE TABLE IF NOT EXISTS `settings` (
+  `setting_key` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `setting_value` longtext COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.settings: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `settings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `settings` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.users
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `full_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` enum('admin','editor','author') COLLATE utf8mb4_unicode_ci DEFAULT 'author',
+  `permissions` json DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.users: 1 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `role`, `permissions`, `is_active`, `created_at`) VALUES
+	(2, 'admin', '$2b$10$vpgtTA51GVgFZZpKJgFwcODV8gjWEhTpmH/crgj70Wpj8yCCzHYJ2', 'Osman Bey', 'admin', '{"all": true}', 1, '2026-02-08 14:12:57');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.videos
+CREATE TABLE IF NOT EXISTS `videos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.videos: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `videos` DISABLE KEYS */;
+INSERT INTO `videos` (`id`, `title`, `url`, `created_at`) VALUES
+	(1, 'asdasf', 'https://www.youtube.com/embed/aWMdUqyk3Ys&list=RDaWMdUqyk3Ys&start_radio=1', '2026-02-08 20:27:34'),
+	(2, 'asdasd', 'https://www.youtube.com/embed/yr7mYngK1Xc', '2026-02-08 20:28:06');
+/*!40000 ALTER TABLE `videos` ENABLE KEYS */;
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+
+============================================================
+DOSYA YOLU: veritabanı kodları.txt
+============================================================
+-- --------------------------------------------------------
+-- Sunucu:                       127.0.0.1
+-- Sunucu sürümü:                8.4.7 - MySQL Community Server - GPL
+-- Sunucu İşletim Sistemi:       Win64
+-- HeidiSQL Sürüm:               12.14.0.7170
+-- --------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+-- nerik_db için veritabanı yapısı dökülüyor
+CREATE DATABASE IF NOT EXISTS `nerik_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `nerik_db`;
+
+-- tablo yapısı dökülüyor nerik_db.ads
+CREATE TABLE IF NOT EXISTS `ads` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `target_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `area` enum('header','sidebar','footer') COLLATE utf8mb4_unicode_ci DEFAULT 'sidebar',
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.ads: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `ads` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ads` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.categories
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#2563eb',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.categories: 3 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `categories` DISABLE KEYS */;
+INSERT INTO `categories` (`id`, `name`, `slug`, `color`) VALUES
+	(1, 'Gündem', 'gundem', '#2563eb'),
+	(2, 'Spor', 'spor', '#2563eb'),
+	(3, 'Ekonomi', 'ekonomi', '#2563eb');
+/*!40000 ALTER TABLE `categories` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.column_posts
+CREATE TABLE IF NOT EXISTS `column_posts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `columnist_id` int DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `view_count` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `columnist_id` (`columnist_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.column_posts: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `column_posts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `column_posts` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.columnists
+CREATE TABLE IF NOT EXISTS `columnists` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.columnists: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `columnists` DISABLE KEYS */;
+/*!40000 ALTER TABLE `columnists` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.news
+CREATE TABLE IF NOT EXISTS `news` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `summary` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `content` longtext COLLATE utf8mb4_unicode_ci,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `author_id` int DEFAULT NULL,
+  `status` enum('draft','published','archived') COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
+  `view_count` int DEFAULT '0',
+  `is_breaking` tinyint(1) DEFAULT '0',
+  `is_slider` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`),
+  KEY `category_id` (`category_id`),
+  KEY `author_id` (`author_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.news: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `news` DISABLE KEYS */;
+INSERT INTO `news` (`id`, `title`, `slug`, `summary`, `content`, `image_path`, `category_id`, `author_id`, `status`, `view_count`, `is_breaking`, `is_slider`, `created_at`, `updated_at`) VALUES
+	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 7, 0, 0, '2026-02-08 18:07:34', '2026-02-08 20:21:46'),
+	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p>', '/uploads/1770578141018.jpg', NULL, 2, 'published', 2, 1, 1, '2026-02-08 19:15:41', '2026-02-08 20:21:46');
+/*!40000 ALTER TABLE `news` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.settings
+CREATE TABLE IF NOT EXISTS `settings` (
+  `setting_key` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `setting_value` longtext COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.settings: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `settings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `settings` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.users
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `full_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` enum('admin','editor','author') COLLATE utf8mb4_unicode_ci DEFAULT 'author',
+  `permissions` json DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.users: 1 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `role`, `permissions`, `is_active`, `created_at`) VALUES
+	(2, 'admin', '$2b$10$vpgtTA51GVgFZZpKJgFwcODV8gjWEhTpmH/crgj70Wpj8yCCzHYJ2', 'Osman Bey', 'admin', '{"all": true}', 1, '2026-02-08 14:12:57');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.videos
+CREATE TABLE IF NOT EXISTS `videos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.videos: 0 rows tablosu için veriler indiriliyor
+/*!40000 ALTER TABLE `videos` DISABLE KEYS */;
+INSERT INTO `videos` (`id`, `title`, `url`, `created_at`) VALUES
+	(1, 'asdasf', 'https://www.youtube.com/embed/aWMdUqyk3Ys&list=RDaWMdUqyk3Ys&start_radio=1', '2026-02-08 20:27:34'),
+	(2, 'asdasd', 'https://www.youtube.com/embed/yr7mYngK1Xc', '2026-02-08 20:28:06');
+/*!40000 ALTER TABLE `videos` ENABLE KEYS */;
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+
+============================================================
 DOSYA YOLU: backend\.env
 ============================================================
 # backend/.env dosyasının içi
@@ -135,11 +475,17 @@ DOSYA YOLU: backend\server.js
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const videoController = require('./controllers/videoController');
+const multer = require('multer');
+const fs = require('fs');
 
-// Rotaları içe aktar (Senin orijinal dosyaların)
+// KONTROLCÜLER (Beyinler)
 const authRoutes = require('./routes/authRoutes');
 const newsRoutes = require('./routes/newsRoutes');
+const contentController = require('./controllers/contentController');
+const userController = require('./controllers/userController');
+
+// MİDDLEWARE (Güvenlik Görevlisi) - İŞTE EKSİK OLAN BUYDU!
+const checkAuth = require('./middleware/authMiddleware');
 
 const app = express();
 const PORT = 3000;
@@ -149,30 +495,62 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/videos', videoController.getAllVideos);
-app.post('/api/videos', videoController.addVideo); // (Auth eklenebilir)
-app.delete('/api/videos/:id', videoController.deleteVideo);
-
 // Resim klasörünü dışarı aç
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'))); // DİKKAT: 'public/uploads' değil, direkt 'uploads' olabilir. Kontrol et.
-// NOT: Senin 'newsRoutes.js' dosyan resimleri 'public/uploads/' klasörüne kaydediyor. 
-// O yüzden statik klasör yolunu da ona göre ayarlamalıyız:
-app.use('/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+// --- RESİM YÜKLEME AYARI (MULTER) ---
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = 'public/uploads/';
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); 
+    }
+});
+const upload = multer({ storage: storage });
 
-// 2. ROTALARI TANIMLA
-app.use('/api/auth', authRoutes); // Login ve Register işlemleri burada
-app.use('/api/news', newsRoutes); // Haber ekleme/silme işlemleri burada
+// 2. ANA ROTALAR
+app.use('/api/auth', authRoutes);
+app.use('/api/news', newsRoutes);
+
+// --- 3. İÇERİK YÖNETİMİ ROTALARI ---
+
+// PERSONEL YÖNETİMİ
+app.get('/api/users', userController.getUsers);
+app.post('/api/users', upload.single('image'), userController.addUser);
+app.delete('/api/users/:id', userController.deleteUser);
+
+// VİDEOLAR
+app.get('/api/videos', contentController.getVideos);
+app.post('/api/videos', upload.none(), contentController.addVideo);
+app.delete('/api/videos/:id', contentController.deleteVideo);
+
+// REKLAMLAR
+app.get('/api/ads', contentController.getAds);
+app.post('/api/ads', upload.single('image'), contentController.addAd);
+app.delete('/api/ads/:id', contentController.deleteAd);
+
+// KÖŞE YAZILARI
+// Yazarları ve yazıları herkes görebilir
+app.get('/api/authors', contentController.getAuthors);
+app.get('/api/column-posts', contentController.getColumnPosts);
+
+// Yazı eklerken ve silerken GÜVENLİK (checkAuth) lazım!
+app.post('/api/column-posts', checkAuth, upload.none(), contentController.addColumnPost);
+app.delete('/api/column-posts/:id', checkAuth, contentController.deleteColumnPost);
 
 // Sunucuyu Başlat
 app.listen(PORT, () => {
-    console.log(`🚀 Profesyonel Sunucu Aktif: http://localhost:${PORT}`);
+    console.log(`🚀 Sunucu Aktif: http://localhost:${PORT}`);
 });
 
 ============================================================
 DOSYA YOLU: backend\controllers\authController.js
 ============================================================
-// backend/controllers/authController.js
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -191,35 +569,49 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // 3. Veritabanına kaydet
-    // Varsayılan rol 'author' (yazar) olarak atanır
-    const sql = 'INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)';
-    await db.query(sql, [username, hashedPassword, full_name, 'author']);
+    // Varsayılan rol 'author' (yazar) ve izin 'can_post_column' (yazı yazabilir) olarak atanır
+    const defaultPermissions = JSON.stringify({ can_post_column: true });
+    
+    const sql = 'INSERT INTO users (username, password_hash, full_name, role, permissions) VALUES (?, ?, ?, ?, ?)';
+    await db.query(sql, [username, hashedPassword, full_name, 'author', defaultPermissions]);
 
     res.status(201).json({ message: 'Kullanıcı başarıyla oluşturuldu.' });
 };
 
 exports.login = async (req, res) => {
     const { username, password } = req.body;
-
-    // 1. Kullanıcıyı bul
+    
     const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (users.length === 0) {
-        return res.status(400).json({ message: 'Kullanıcı adı veya şifre hatalı.' });
-    }
+    if (users.length === 0) return res.status(400).json({ message: 'Kullanıcı bulunamadı.' });
 
     const user = users[0];
-
-    // 2. Şifreyi kontrol et (Hash kıyaslama)
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-        return res.status(400).json({ message: 'Kullanıcı adı veya şifre hatalı.' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Şifre hatalı.' });
 
-    // 3. Token oluştur (Dijital Kimlik)
+    // --- İZİN KONTROLÜ (Düzeltilmiş Tek Blok) ---
+    let userPermissions = {};
+    try {
+        if (user.permissions) {
+            // Eğer veritabanından string gelirse JSON'a çevir, zaten obje ise direkt al
+            userPermissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions;
+        } else {
+            userPermissions = {}; // Null ise boş obje yap
+        }
+    } catch (e) {
+        userPermissions = {};
+    }
+    // -------------------------------------------
+
+    // Token oluştur
     const token = jwt.sign(
-        { id: user.id, role: user.role, username: user.username },
+        { 
+            id: user.id, 
+            role: user.role, 
+            username: user.username,
+            permissions: userPermissions 
+        },
         process.env.JWT_SECRET,
-        { expiresIn: '1d' } // Token 1 gün geçerli
+        { expiresIn: '1d' }
     );
 
     res.json({
@@ -229,9 +621,114 @@ exports.login = async (req, res) => {
             id: user.id,
             username: user.username,
             full_name: user.full_name,
-            role: user.role
+            role: user.role,
+            permissions: userPermissions
         }
     });
+};
+
+============================================================
+DOSYA YOLU: backend\controllers\contentController.js
+============================================================
+const db = require('../db');
+const fs = require('fs');
+
+// --- VİDEO İŞLEMLERİ ---
+exports.getVideos = async (req, res) => {
+    try { const [rows] = await db.query('SELECT * FROM videos ORDER BY created_at DESC'); res.json(rows); } catch (err) { res.status(500).json({ error: err.message }); }
+};
+exports.addVideo = async (req, res) => {
+    try {
+        let { title, url } = req.body;
+        if(url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
+        else if(url.includes('youtu.be/')) url = url.replace('youtu.be/', 'youtube.com/embed/');
+        await db.query('INSERT INTO videos (title, url) VALUES (?, ?)', [title, url]);
+        res.json({ message: 'Video eklendi' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+exports.deleteVideo = async (req, res) => {
+    try { await db.query('DELETE FROM videos WHERE id = ?', [req.params.id]); res.json({ message: 'Silindi' }); } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+// --- REKLAM İŞLEMLERİ ---
+exports.getAds = async (req, res) => {
+    try { const [rows] = await db.query('SELECT * FROM ads ORDER BY id DESC'); res.json(rows); } catch (err) { res.status(500).json({ error: err.message }); }
+};
+exports.addAd = async (req, res) => {
+    try {
+        const { title, target_url, area } = req.body;
+        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+        await db.query('INSERT INTO ads (title, image_path, target_url, area) VALUES (?, ?, ?, ?)', [title, imagePath, target_url, area]);
+        res.json({ message: 'Reklam eklendi' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+exports.deleteAd = async (req, res) => {
+    try { await db.query('DELETE FROM ads WHERE id = ?', [req.params.id]); res.json({ message: 'Silindi' }); } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+// --- KÖŞE YAZILARI (DÜZELTİLMİŞ BÖLÜM) ---
+
+// Yazarları Getir (Admin panelinde yazar listesi gerekirse diye)
+exports.getAuthors = async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT id, full_name, image_path FROM users WHERE role IN ('admin', 'editor', 'author')");
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+// Yazıları Getir (BURASI HATALIYDI, DÜZELTİLDİ)
+exports.getColumnPosts = async (req, res) => {
+    try {
+        // ARTIK 'columnists' YOK, 'users' TABLOSUNA BAĞLIYORUZ (JOIN users)
+        // VE 'columnist_id' YERİNE 'user_id' KULLANIYORUZ
+        const sql = `
+            SELECT p.*, u.full_name as author_name, u.image_path as author_image 
+            FROM column_posts p 
+            JOIN users u ON p.user_id = u.id 
+            ORDER BY p.created_at DESC
+        `;
+        const [rows] = await db.query(sql);
+        res.json(rows);
+    } catch (err) { 
+        console.error("🔥 Listeleme Hatası:", err); // Hatayı terminale bas
+        res.status(500).json({ error: err.message }); 
+    }
+};
+
+// Yazı Ekle
+exports.addColumnPost = async (req, res) => {
+    try {
+        const { title, content } = req.body;
+        
+        // Güvenlik kontrolü
+        if (!req.userData) return res.status(401).json({ message: 'Oturum hatası.' });
+
+        const userId = req.userData.userId;
+        const permissions = req.userData.permissions || {};
+
+        // Yetki kontrolü
+        if (!permissions.all && !permissions.can_post_column) {
+            return res.status(403).json({ message: 'Yetkiniz yok.' });
+        }
+
+        await db.query('INSERT INTO column_posts (title, content, user_id) VALUES (?, ?, ?)', [title, content, userId]);
+        res.json({ message: 'Köşe yazısı yayınlandı' });
+    } catch (err) { 
+        console.error("🔥 Ekleme Hatası:", err);
+        res.status(500).json({ error: err.message }); 
+    }
+};
+
+exports.deleteColumnPost = async (req, res) => {
+    try {
+        const permissions = req.userData ? (req.userData.permissions || {}) : {};
+        if (!permissions.all && !permissions.can_delete_column) {
+            return res.status(403).json({ message: 'Silme yetkiniz yok!' });
+        }
+
+        await db.query('DELETE FROM column_posts WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Yazı silindi' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 ============================================================
@@ -241,27 +738,24 @@ const db = require('../db');
 const slugify = require('slugify');
 const fs = require('fs');
 
-// 1. TÜM HABERLERİ GETİR
-// 1. TÜM HABERLERİ GETİR (Filtreli)
+// 1. TÜM HABERLERİ GETİR (Filtreleme Destekli)
 exports.getAllNews = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20; // Limit arttırdık
+    const limit = parseInt(req.query.limit) || 20;
     const offset = (page - 1) * limit;
-    const type = req.query.type; // 'slider' veya 'breaking' gelebilir
+    const type = req.query.type; // 'slider' veya 'breaking' filtresi
 
     try {
-        // Filtre Mantığı
         let whereClause = 'WHERE n.status = "published"';
         if (type === 'slider') whereClause += ' AND n.is_slider = 1';
         if (type === 'breaking') whereClause += ' AND n.is_breaking = 1';
 
-        // Toplam Sayı
+        // Toplam sayıyı al
         const [countResult] = await db.query(`SELECT COUNT(*) as total FROM news n ${whereClause}`);
         const totalItems = countResult[0].total;
 
-        // Veriyi Çek
         const sql = `
-            SELECT n.*, c.name as category_name, u.full_name as author_name 
+            SELECT n.*, c.name as category_name, c.color as category_color, u.full_name as author_name 
             FROM news n 
             LEFT JOIN categories c ON n.category_id = c.id
             LEFT JOIN users u ON n.author_id = u.id
@@ -272,7 +766,12 @@ exports.getAllNews = async (req, res) => {
 
         const [news] = await db.query(sql, [limit, offset]);
 
-        res.json({ news, totalItems, currentPage: page });
+        res.json({
+            news,
+            currentPage: page,
+            totalPages: Math.ceil(totalItems / limit),
+            totalItems
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -308,7 +807,6 @@ exports.createNews = async (req, res) => {
 
         let slug = slugify(title, { lower: true, strict: true, locale: 'tr' });
         
-        // Slug kontrolü
         const [check] = await db.query('SELECT id FROM news WHERE slug = ?', [slug]);
         if (check.length > 0) slug += `-${Date.now()}`;
 
@@ -318,12 +816,7 @@ exports.createNews = async (req, res) => {
         `;
 
         await db.query(sql, [
-            title, 
-            slug, 
-            summary, 
-            content, 
-            imagePath, 
-            category_id, 
+            title, slug, summary, content, imagePath, category_id, 
             req.userData.userId, 
             is_breaking === 'true' ? 1 : 0, 
             is_slider === 'true' ? 1 : 0
@@ -341,9 +834,6 @@ exports.deleteNews = async (req, res) => {
         const [item] = await db.query('SELECT image_path FROM news WHERE id = ?', [req.params.id]);
 
         if (item.length > 0 && item[0].image_path) {
-            // "public" klasörünü yolun başına eklemeyi unutma, çünkü veritabanında /uploads/... diye kayıtlı
-            // Ama dosya sistemi backend/public/uploads/... diye arıyor olabilir.
-            // Senin server.js ayarına göre burası değişebilir, ama genelde:
             const filePath = `public${item[0].image_path}`; 
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         }
@@ -358,41 +848,28 @@ exports.deleteNews = async (req, res) => {
 // 5. HABER GÜNCELLE
 exports.updateNews = async (req, res) => {
     try {
-        console.log("📝 Güncelleme İsteği Geldi:", req.body);
-
         const { title, summary, content, category, is_breaking, is_slider } = req.body;
         const newsId = req.params.id;
 
-        // 1. Slug Yenile
         let slug = slugify(title, { lower: true, strict: true, locale: 'tr' });
         slug += `-${Date.now()}`;
 
-        // 2. Kategori ID Bul
         const [catResult] = await db.query('SELECT id FROM categories WHERE name = ?', [category]);
         const categoryId = catResult.length > 0 ? catResult[0].id : 1;
 
-        // 3. SQL Parametrelerini Hazırla
-        // Temel parametreler
         let queryParams = [
-            title, 
-            slug, 
-            summary, 
-            content, 
-            categoryId, 
+            title, slug, summary, content, categoryId, 
             is_breaking === 'true' ? 1 : 0, 
             is_slider === 'true' ? 1 : 0
         ];
 
         let imageSqlPart = "";
-
-        // Eğer yeni resim yüklendiyse SQL'e resim kısmını da ekle
         if (req.file) {
             const imagePath = `/uploads/${req.file.filename}`;
             imageSqlPart = ", image_path = ?";
             queryParams.push(imagePath);
         }
 
-        // En sona WHERE koşulu için ID'yi ekle
         queryParams.push(newsId);
 
         const sql = `
@@ -402,13 +879,76 @@ exports.updateNews = async (req, res) => {
         `;
 
         await db.query(sql, queryParams);
-        console.log("✅ Haber Güncellendi ID:", newsId);
         res.json({ message: 'Haber başarıyla güncellendi!' });
-
     } catch (err) {
-        console.error("❌ Güncelleme Hatası:", err);
-        res.status(500).json({ error: 'Güncelleme sırasında hata oluştu.' });
+        res.status(500).json({ error: 'Güncelleme hatası.' });
     }
+};
+
+// 6. DURUM DEĞİŞTİR (Manşet Yap/Çıkar)
+exports.toggleStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { field, value } = req.body; // field: 'is_slider', value: 1 veya 0
+
+        if (!['is_slider', 'is_breaking'].includes(field)) {
+             return res.status(400).json({ message: 'Geçersiz işlem!' });
+        }
+
+        const sql = `UPDATE news SET ${field} = ? WHERE id = ?`;
+        await db.query(sql, [value, id]);
+        
+        res.json({ message: 'Durum güncellendi.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+============================================================
+DOSYA YOLU: backend\controllers\userController.js
+============================================================
+const db = require('../db');
+const bcrypt = require('bcryptjs');
+
+// Personel Listesi
+exports.getUsers = async (req, res) => {
+    try {
+        const [users] = await db.query('SELECT id, username, full_name, role, image_path, bio, created_at FROM users ORDER BY created_at DESC');
+        res.json(users);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+// Yeni Personel Ekle
+exports.addUser = async (req, res) => {
+    try {
+        const { username, password, full_name, role, bio } = req.body;
+        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+        const [exists] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+        if (exists.length > 0) return res.status(400).json({ message: 'Bu kullanıcı adı dolu!' });
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // İzinleri role göre otomatik ata (Basit mantık)
+        let permissions = {};
+        if (role === 'admin') permissions = { all: true };
+        else if (role === 'author') permissions = { can_post_column: true };
+        else if (role === 'editor') permissions = { can_edit_news: true };
+
+        const sql = 'INSERT INTO users (username, password_hash, full_name, role, permissions, image_path, bio) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        await db.query(sql, [username, hashedPassword, full_name, role, JSON.stringify(permissions), imagePath, bio]);
+
+        res.json({ message: 'Personel başarıyla eklendi.' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+// Personel Sil
+exports.deleteUser = async (req, res) => {
+    try {
+        await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Personel silindi.' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 ============================================================
@@ -457,24 +997,24 @@ exports.deleteVideo = async (req, res) => {
 ============================================================
 DOSYA YOLU: backend\middleware\authMiddleware.js
 ============================================================
-// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
     try {
-        // Token genelde "Bearer <token>" şeklinde gelir
+        // Token'ı header'dan al ("Bearer <token>" formatında)
         const token = req.headers.authorization.split(' ')[1];
         
-        // Token'ı şifreyle çözmeye çalış
+        // Şifreyi çöz
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Çözülen veriyi isteğe ekle (req.userData içinde id ve role olacak)
+        // Verileri isteğe ekle
         req.userData = { 
             userId: decodedToken.id, 
-            role: decodedToken.role 
+            role: decodedToken.role,
+            permissions: decodedToken.permissions 
         };
         
-        next(); // Her şey yolunda, geçebilirsin
+        next();
     } catch (error) {
         res.status(401).json({ message: 'Yetkisiz erişim! Lütfen giriş yapın.' });
     }
@@ -499,7 +1039,6 @@ module.exports = router;
 ============================================================
 DOSYA YOLU: backend\routes\newsRoutes.js
 ============================================================
-// backend/routes/newsRoutes.js
 const express = require('express');
 const router = express.Router();
 const newsController = require('../controllers/newsController');
@@ -507,37 +1046,25 @@ const checkAuth = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 
-// Resim Yükleme Ayarı (Multer)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'public/uploads/');
     },
     filename: (req, file, cb) => {
-        // Dosya adı çakışmasın diye tarih ekliyoruz
         cb(null, Date.now() + path.extname(file.originalname)); 
     }
 });
-
 const upload = multer({ storage: storage });
 
 // --- ROTALAR ---
-
-// Herkes görebilir
 router.get('/', newsController.getAllNews);
 router.get('/:slug', newsController.getNewsBySlug);
 
-// Sadece Giriş Yapanlar (checkAuth)
-// upload.single('image') -> Frontend'den 'image' isminde dosya bekler
+// Korumalı Rotalar (Sadece Admin)
 router.post('/', checkAuth, upload.single('image'), newsController.createNews);
-
+router.put('/:id', checkAuth, upload.single('image'), newsController.updateNews); // Güncelleme
 router.delete('/:id', checkAuth, newsController.deleteNews);
-
-module.exports = router;
-
-// ... Diğer rotaların yanına ekle
-
-// Güncelleme Rotası (PUT)
-router.put('/:id', checkAuth, upload.single('image'), newsController.updateNews);
+router.patch('/:id/toggle', checkAuth, newsController.toggleStatus); // Hızlı Durum Değiştirme
 
 module.exports = router;
 
@@ -1233,302 +1760,179 @@ DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.css
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.html
 ============================================================
 <div class="admin-wrapper d-flex">
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-brand text-center py-4 border-bottom border-secondary">
-      <span class="text-primary fw-bold fs-4">N</span
-      ><span class="text-white fw-bold fs-4">ERİK</span>
-      <small class="d-block text-muted" style="font-size: 0.7rem">YÖNETİM PANELİ</small>
-    </div>
-
-    <nav class="mt-4 px-2 d-flex flex-column gap-1">
-      <a
-        (click)="switchTab('news')"
-        [class.active]="activeTab === 'news'"
-        class="nav-link rounded p-3 text-white-50 hover-text-white"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-newspaper me-3 text-primary"></i> Haberler
-      </a>
-      <a
-        (click)="switchTab('slider')"
-        [class.active]="activeTab === 'slider'"
-        class="nav-link rounded p-3 text-white-50 hover-text-white"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-images me-3 text-warning"></i> Manşetler
-      </a>
-      <a
-        (click)="switchTab('breaking')"
-        [class.active]="activeTab === 'breaking'"
-        class="nav-link rounded p-3 text-white-50 hover-text-white"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-bolt me-3 text-danger"></i> Son Dakika
-      </a>
-      <a
-        (click)="switchTab('videos')"
-        [class.active]="activeTab === 'videos'"
-        class="nav-link rounded p-3 text-white-50 hover-text-white"
-        style="cursor: pointer"
-      >
-        <i class="fab fa-youtube me-3 text-danger"></i> Video Galeri
-      </a>
-      <a class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer">
-        <i class="fas fa-ad me-3 text-success"></i> Reklamlar
-      </a>
-      <a class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer">
-        <i class="fas fa-pen-nib me-3 text-info"></i> Köşe Yazıları
-      </a>
-      <a class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer">
-        <i class="fas fa-users me-3 text-secondary"></i> Personel
-      </a>
-
-      <hr class="border-secondary my-3" />
-
-      <a routerLink="/" class="nav-link rounded p-3 text-info" style="cursor: pointer">
-        <i class="fas fa-external-link-alt me-3"></i> Siteyi Gör
-      </a>
-      <a (click)="onLogout()" class="nav-link rounded p-3 text-danger mt-2" style="cursor: pointer">
-        <i class="fas fa-sign-out-alt me-3"></i> Güvenli Çıkış
-      </a>
-    </nav>
-  </div>
-
-  <div class="main-content flex-grow-1 bg-light">
-    <div
-      class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 rounded-4 shadow-sm"
-    >
-      <div>
-        <h4 class="fw-bold text-dark mb-0">HABER YÖNETİMİ</h4>
-        <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Yönetici' }}</small>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <div class="text-end d-none d-md-block">
-          <span class="d-block fw-bold small text-dark">{{ currentUser?.full_name }}</span>
-          <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem">ADMIN</span>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand text-center py-4 border-bottom border-secondary">
+            <span class="text-primary fw-bold fs-4">N</span><span class="text-white fw-bold fs-4">ERİK</span>
+            <small class="d-block text-muted" style="font-size: 0.7rem;">YÖNETİM PANELİ</small>
         </div>
-        <img
-          [src]="
-            'https://ui-avatars.com/api/?name=' +
-            (currentUser?.full_name || 'Admin') +
-            '&background=2563eb&color=fff'
-          "
-          class="rounded-circle shadow-sm"
-          width="45"
-          height="45"
-        />
-      </div>
+        <nav class="mt-4 px-2 d-flex flex-column gap-1">
+            <a (click)="switchTab('news')" [class.active]="activeTab === 'news'" class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;"><i class="fas fa-newspaper me-3 text-primary"></i> Haberler</a>
+            <a (click)="switchTab('slider')" [class.active]="activeTab === 'slider'" class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;"><i class="fas fa-images me-3 text-warning"></i> Manşetler</a>
+            <a (click)="switchTab('breaking')" [class.active]="activeTab === 'breaking'" class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;"><i class="fas fa-bolt me-3 text-danger"></i> Son Dakika</a>
+            <a (click)="switchTab('videos')" [class.active]="activeTab === 'videos'" class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;"><i class="fab fa-youtube me-3 text-danger"></i> Video Galeri</a>
+            <a (click)="switchTab('ads')" [class.active]="activeTab === 'ads'" class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;"><i class="fas fa-ad me-3 text-success"></i> Reklamlar</a>
+            <a *ngIf="currentUser.permissions?.all || currentUser.permissions?.can_post_column" 
+   (click)="switchTab('columnists')" 
+   [class.active]="activeTab === 'columnists'" 
+   class="nav-link rounded p-3 text-white-50 hover-text-white" 
+   style="cursor: pointer;">
+   <i class="fas fa-pen-nib me-3 text-info"></i> Köşe Yazıları
+</a>
+            <hr class="border-secondary my-3">
+            <a routerLink="/" class="nav-link rounded p-3 text-info" style="cursor: pointer;"><i class="fas fa-external-link-alt me-3"></i> Siteyi Gör</a>
+            <a (click)="onLogout()" class="nav-link rounded p-3 text-danger mt-2" style="cursor: pointer;"><i class="fas fa-sign-out-alt me-3"></i> Güvenli Çıkış</a>
+        </nav>
     </div>
 
-    <div class="mb-4" *ngIf="!showNewsForm">
-      <button
-        class="btn btn-primary px-4 py-3 fw-bold shadow-sm rounded-3 hover-scale"
-        (click)="showNewsForm = true"
-      >
-        <i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle
-      </button>
-    </div>
-
-    <div class="card border-0 shadow-sm p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showNewsForm">
-      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-        <h5 class="fw-bold mb-0 text-primary">
-          <i class="fas fa-edit me-2"></i> Yeni Haber Oluştur
-        </h5>
-        <button class="btn-close" (click)="showNewsForm = false"></button>
-      </div>
-
-      <div class="row g-4">
-        <div class="col-lg-8">
-          <div class="mb-4">
-            <label class="form-label fw-bold small text-secondary text-uppercase"
-              >Haber Başlığı</label
-            >
-            <input
-              type="text"
-              [(ngModel)]="newsData.title"
-              class="form-control form-control-lg bg-light border-0 py-3 fw-bold"
-              placeholder="Dikkat çekici bir başlık girin..."
-            />
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-bold small text-secondary text-uppercase"
-              >Haber İçeriği</label
-            >
-            <div class="bg-white border rounded-3 overflow-hidden">
-              <quill-editor
-                [(ngModel)]="newsData.content"
-                [styles]="{ height: '350px' }"
-                placeholder="Haber detaylarını buraya yazın..."
-              ></quill-editor>
-            </div>
-          </div>
+    <div class="main-content flex-grow-1 bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 rounded-4 shadow-sm">
+            <h4 class="fw-bold text-dark mb-0 text-uppercase">{{ activeTab }} YÖNETİMİ</h4>
+            <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Admin' }}</small>
         </div>
 
-        <div class="col-lg-4">
-          <div class="card bg-light border-0 p-4 rounded-4 h-100">
-            <div class="mb-4">
-              <label class="form-label fw-bold small text-secondary text-uppercase">Kategori</label>
-              <select
-                [(ngModel)]="newsData.category"
-                class="form-select form-select-lg border-0 shadow-sm"
-              >
-                <option value="GÜNDEM">GÜNDEM</option>
-                <option value="EKONOMİ">EKONOMİ</option>
-                <option value="SPOR">SPOR</option>
-                <option value="TEKNOLOJİ">TEKNOLOJİ</option>
-              </select>
-            </div>
-
-            <div class="mb-4">
-              <label class="form-label fw-bold small text-secondary text-uppercase"
-                >Haber Görseli</label
-              >
-
-              <input
-                type="file"
-                #fileInput
-                (change)="onFileSelected($event)"
-                class="d-none"
-                accept="image/*"
-              />
-
-              <div
-                class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer position-relative overflow-hidden"
-                (click)="fileInput.click()"
-                style="
-                  min-height: 200px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  flex-direction: column;
-                "
-              >
-                <div *ngIf="!selectedFile">
-                  <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                  <h6 class="fw-bold text-dark mb-1">Resim Seç</h6>
-                  <small class="text-muted">.jpg veya .png (Max 2MB)</small>
-                </div>
-
-                <div [class.d-none]="!selectedFile" class="w-100 h-100">
-                  <img #imageElement style="max-width: 100%; display: block" />
-                </div>
-              </div>
-            </div>
-
-            <div class="d-grid gap-3 mt-auto">
-              <button (click)="saveNews()" class="btn btn-primary fw-bold py-3 shadow-sm rounded-3">
-                <i class="fas fa-paper-plane me-2"></i> YAYINLA
-              </button>
-              <button
-                (click)="showNewsForm = false"
-                class="btn btn-outline-secondary fw-bold py-2 rounded-3 border-0"
-              >
-                VAZGEÇ
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      <div class="card-header bg-white py-3 border-bottom">
-        <h6 class="fw-bold m-0 text-secondary text-uppercase ls-1">Sistemdeki Haberler</h6>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="bg-light text-muted small text-uppercase">
-            <tr>
-              <th class="ps-4 py-3">Görsel</th>
-              <th>Başlık</th>
-              <th>Kategori</th>
-              <th class="text-end pe-4">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let news of newsList">
-              <td class="ps-4">
-                <img
-                  *ngIf="news.image_path"
-                  [src]="baseUrl + news.image_path"
-                  class="rounded-3 shadow-sm object-fit-cover"
-                  style="width: 60px; height: 40px"
-                />
-                <div
-                  *ngIf="!news.image_path"
-                  class="bg-secondary rounded-3"
-                  style="width: 60px; height: 40px"
-                ></div>
-              </td>
-
-              <td class="fw-bold text-dark">{{ news.title | uppercase }}</td>
-
-              <td>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-                  {{ news.category_name || news.category || 'Genel' }}
-                </span>
-              </td>
-
-              <td class="text-end pe-4">
-                <button
-                  (click)="editNews(news)"
-                  class="btn btn-sm btn-light text-warning me-2 shadow-sm"
-                >
-                  <i class="fas fa-edit"></i>
+        <div *ngIf="activeTab === 'news'" class="fade-in">
+            <div class="mb-4" *ngIf="!showForm">
+                <button class="btn btn-primary px-4 py-3 fw-bold shadow-sm rounded-3 hover-scale" (click)="showForm = true">
+                    <i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle
                 </button>
-                <button
-                  (click)="deleteNews(news.id)"
-                  class="btn btn-sm btn-light text-danger shadow-sm"
-                >
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-
-            <tr *ngIf="newsList.length === 0">
-              <td colspan="4" class="text-center py-5 text-muted">
-                <i class="fas fa-inbox fa-2x mb-3 opacity-25"></i>
-                <p class="mb-0 fw-bold">Henüz sisteme eklenmiş haber yok.</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div *ngIf="activeTab === 'news' || activeTab === 'slider' || activeTab === 'breaking'">
-    </div>
-
-<div *ngIf="activeTab === 'videos'" class="fade-in">
-    <div class="row mb-4">
-        <div class="col-md-5">
-            <div class="card border-0 shadow-sm p-4">
-                <h6 class="fw-bold mb-3">Yeni Video Ekle</h6>
-                <input type="text" [(ngModel)]="videoData.title" class="form-control mb-3" placeholder="Video Başlığı">
-                <input type="text" [(ngModel)]="videoData.video_url" class="form-control mb-3" placeholder="YouTube Linki (Örn: https://www.youtube.com/watch?v=...)">
-                <button (click)="saveVideo()" class="btn btn-danger w-100"><i class="fab fa-youtube me-2"></i> Videoyu Ekle</button>
             </div>
-        </div>
-        
-        <div class="col-md-7">
-            <div class="row g-3">
-                <div *ngFor="let video of videoList" class="col-md-6">
-                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
-                        <iframe [src]="sanitizer.bypassSecurityTrustResourceUrl(video.video_url)" height="200" frameborder="0" allowfullscreen></iframe>
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <span class="small fw-bold">{{ video.title }}</span>
-                            <button (click)="deleteVideo(video.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+
+            <div class="card border-0 shadow-sm p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showForm">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-edit me-2"></i> {{ isEditing ? 'Haberi Düzenle' : 'Yeni Haber' }}</h5>
+                    <button class="btn-close" (click)="resetForm()"></button>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary">BAŞLIK</label>
+                            <input type="text" [(ngModel)]="newsData.title" class="form-control form-control-lg fw-bold">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">İÇERİK (Editör)</label>
+                            <div class="bg-white border rounded-3 overflow-hidden">
+                                <quill-editor [(ngModel)]="newsData.content" [styles]="{height: '350px'}"></quill-editor>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card bg-light border-0 p-4 rounded-4 h-100">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">KATEGORİ</label>
+                                <select [(ngModel)]="newsData.category" class="form-select form-select-lg">
+                                    <option value="GÜNDEM">GÜNDEM</option>
+                                    <option value="EKONOMİ">EKONOMİ</option>
+                                    <option value="SPOR">SPOR</option>
+                                    <option value="TEKNOLOJİ">TEKNOLOJİ</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">GÖRSEL (Kırpma)</label>
+                                <input type="file" #fileInput (change)="onFileSelected($event)" class="d-none" accept="image/*">
+                                <div class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer" (click)="fileInput.click()">
+                                    <div *ngIf="!selectedFile && !newsData.image">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                        <h6 class="fw-bold text-dark">Resim Seç</h6>
+                                    </div>
+                                    <div [class.d-none]="!selectedFile && !newsData.image">
+                                        <img #imageElement class="img-fluid rounded">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mt-auto">
+                                <button (click)="saveNews()" class="btn btn-primary fw-bold py-3">{{ isEditing ? 'GÜNCELLE' : 'YAYINLA' }}</button>
+                                <button (click)="resetForm()" class="btn btn-outline-secondary">VAZGEÇ</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr><th class="ps-4 py-3">Görsel</th><th>Başlık</th><th>Kategori</th><th class="text-end pe-4">İşlemler</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let news of newsList">
+                            <td class="ps-4"><img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="rounded shadow-sm" width="60"></td>
+                            <td class="fw-bold">{{ news.title }}</td>
+                            <td><span class="badge bg-primary-subtle text-primary">{{ news.category_name }}</span></td>
+                            <td class="text-end pe-4">
+                                <button (click)="editItem(news, 'news')" class="btn btn-sm btn-light text-warning me-2"><i class="fas fa-edit"></i></button>
+                                <button (click)="deleteItem(news.id, 'news')" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div *ngIf="activeTab === 'columnists'" class="fade-in">
+
+    <div class="mb-4">
+        <button class="btn btn-info text-white px-4 py-3 fw-bold shadow-sm rounded-3" (click)="showForm = true">
+            <i class="fas fa-plus-circle me-2"></i> YENİ YAZI YAZ
+        </button>
+    </div>
+
+    <div *ngIf="showForm" class="card border-0 shadow-sm p-4 mb-4 rounded-4 bg-white fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-info">
+                <img *ngIf="currentUser.image_path" [src]="baseUrl + currentUser.image_path" class="rounded-circle me-2" width="30" height="30">
+                {{ currentUser.full_name }} Olarak Yazıyorsunuz
+            </h5>
+            <button class="btn-close" (click)="resetForm()"></button>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="fw-bold small text-muted">BAŞLIK</label>
+                <input [(ngModel)]="postData.title" class="form-control form-control-lg fw-bold" placeholder="Yazı Başlığı...">
+            </div>
+            <div class="col-12">
+                <label class="fw-bold small text-muted">İÇERİK</label>
+                <div class="bg-white border rounded overflow-hidden">
+                    <quill-editor [(ngModel)]="postData.content" [styles]="{height: '400px'}"></quill-editor>
+                </div>
+            </div>
+            <div class="col-12 text-end">
+                <button (click)="saveColumnPost()" class="btn btn-info text-white btn-lg fw-bold px-5">YAYINLA</button>
+            </div>
         </div>
     </div>
-</div>
 
+    </div>
+
+        <div *ngIf="activeTab === 'slider' || activeTab === 'breaking'" class="fade-in">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card p-3 border-warning border-top border-3 h-100">
+                        <h6 class="fw-bold text-warning mb-3">YAYINDAKİLER</h6>
+                        <table class="table"><tr *ngFor="let news of (activeTab === 'slider' ? activeSliderNews : activeBreakingNews)"><td><img [src]="baseUrl + news.image_path" width="40"></td><td class="small">{{ news.title }}</td><td><button (click)="toggleNewsStatus(news.id, activeTab === 'slider' ? 'is_slider' : 'is_breaking', false)" class="btn btn-sm btn-outline-danger">Çıkar</button></td></tr></table>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card p-3 border-success border-top border-3 h-100 bg-light">
+                        <h6 class="fw-bold text-success mb-3">EKLE</h6>
+                        <table class="table"><tr *ngFor="let news of candidateNews"><td class="small">{{ news.title }}</td><td><button (click)="toggleNewsStatus(news.id, activeTab === 'slider' ? 'is_slider' : 'is_breaking', true)" class="btn btn-sm btn-success">Ekle</button></td></tr></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="activeTab === 'videos'" class="fade-in">
+            <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-5"><input [(ngModel)]="videoData.title" class="form-control" placeholder="Video Başlığı"></div><div class="col-md-5"><input [(ngModel)]="videoData.url" class="form-control" placeholder="YouTube Linki"></div><div class="col-md-2"><button (click)="saveVideo()" class="btn btn-danger w-100">Ekle</button></div></div></div>
+            <div class="row g-3"><div *ngFor="let v of videoList" class="col-md-4"><div class="card h-100 shadow-sm border-0"><iframe [src]="sanitizer.bypassSecurityTrustResourceUrl(v.url)" height="200" frameborder="0" allowfullscreen></iframe><div class="card-body d-flex justify-content-between"><span class="small fw-bold">{{ v.title }}</span><button (click)="deleteItem(v.id, 'videos')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></div></div></div></div>
+        </div>
+
+        <div *ngIf="activeTab === 'ads'" class="fade-in">
+            <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-3"><input [(ngModel)]="adData.title" class="form-control" placeholder="Reklam Adı"></div><div class="col-md-3"><input [(ngModel)]="adData.target_url" class="form-control" placeholder="URL"></div><div class="col-md-2"><select [(ngModel)]="adData.area" class="form-select"><option value="sidebar">Sidebar</option><option value="header">Header</option></select></div><div class="col-md-2"><input type="file" id="adFile" class="form-control"></div><div class="col-md-2"><button (click)="saveAd()" class="btn btn-success w-100">Ekle</button></div></div></div>
+            <div class="row g-3"><div *ngFor="let ad of adList" class="col-md-3"><div class="card h-100"><img [src]="baseUrl + ad.image_path" class="card-img-top" style="height: 100px; object-fit: contain;"><div class="card-body"><p class="small fw-bold m-0">{{ ad.title }}</p><button (click)="deleteItem(ad.id, 'ads')" class="btn btn-sm btn-danger float-end"><i class="fas fa-trash"></i></button></div></div></div></div>
+        </div>
+
+    </div>
+</div>
 
 ============================================================
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.spec.ts
@@ -1561,7 +1965,7 @@ describe('Dashboard', () => {
 ============================================================
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.ts
 ============================================================
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core'; // ChangeDetectorRef eklendi
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
@@ -1579,154 +1983,233 @@ import { DomSanitizer } from '@angular/platform-browser';
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  showNewsForm: boolean = false;
+  activeTab: string = 'news'; 
+  showForm: boolean = false;
+  isEditing: boolean = false;
+  currentId: number | null = null;
   currentUser: any = null;
   selectedFile: boolean = false;
-  isEditing: boolean = false;
-  currentNewsId: number | null = null;
-  activeTab: string = 'news'; // Varsayılan sekme: Haberler
-  videoList: any[] = [];
-  videoData = { title: '', video_url: '' };
   
-  // Haber Listesi (Başlangıçta boş dizi)
-  newsList: any[] = [];
   baseUrl = 'http://localhost:3000'; 
-
   @ViewChild('imageElement') imageElement!: ElementRef;
   cropper: any; 
 
-  newsData = {
-    title: '',
-    category: 'GÜNDEM',
-    content: '',
-    image: null
-  };
+  // --- LİSTELER ---
+  newsList: any[] = [];
+  activeSliderNews: any[] = [];
+  activeBreakingNews: any[] = [];
+  videoList: any[] = [];
+  adList: any[] = [];
+  userList: any[] = []; // Personel Listesi
+  columnPostList: any[] = []; // Köşe Yazıları Listesi
+  candidateNews: any[] = []; 
+
+  // --- FORM DATALARI ---
+  newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
+  videoData = { title: '', url: '' };
+  adData = { title: '', target_url: '', area: 'sidebar', image: null };
+  userData = { username: '', password: '', full_name: '', role: 'author', bio: '', image: null };
+  
+  // GÜNCELLENDİ: Artık user_id yok, backend token'dan alacak
+  postData = { title: '', content: '' }; 
 
   constructor(
     private authService: AuthService, 
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef, // Dedektifi buraya çağırdık
+    private cdr: ChangeDetectorRef,
     public sanitizer: DomSanitizer
   ) {}
-
-  switchTab(tabName: string) {
-    this.activeTab = tabName;
-    
-    if (tabName === 'news') {
-        this.getNews(); // Tüm haberler
-    } else if (tabName === 'slider') {
-        this.getFilteredNews('slider'); // Sadece Manşetler
-    } else if (tabName === 'breaking') {
-        this.getFilteredNews('breaking'); // Sadece Son Dakika
-    } else if (tabName === 'videos') {
-        this.getVideos(); // Videolar
-    }
-  }
-
-  getFilteredNews(type: string) {
-    this.http.get<any>(`http://localhost:3000/api/news?type=${type}`).subscribe({
-        next: (res) => {
-            this.newsList = res.news || [];
-            this.cdr.detectChanges();
-        }
-    });
-  }
-
-  // VİDEOLARI GETİR
-  getVideos() {
-    this.http.get<any>('http://localhost:3000/api/videos').subscribe({
-        next: (res) => {
-            this.videoList = res;
-            this.cdr.detectChanges();
-        }
-    });
-  }
-
-  // VİDEO EKLE
-  saveVideo() {
-    if(!this.videoData.title || !this.videoData.video_url) { alert('Alanları doldurun'); return; }
-    
-    this.http.post('http://localhost:3000/api/videos', this.videoData).subscribe({
-        next: () => {
-            alert('Video eklendi');
-            this.videoData = { title: '', video_url: '' };
-            this.getVideos();
-        }
-    });
-  }
-
-  // VİDEO SİL
-  deleteVideo(id: number) {
-    if(confirm('Video silinsin mi?')) {
-        this.http.delete(`http://localhost:3000/api/videos/${id}`).subscribe(() => this.getVideos());
-    }
-  }
 
   ngOnInit() {
     document.body.classList.add('admin-body');
     this.currentUser = this.authService.getCurrentUser();
-    
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     } else {
-      // Sayfa açılınca haberleri çek
       this.getNews();
     }
   }
 
-  ngOnDestroy() {
-    document.body.classList.remove('admin-body');
+  ngOnDestroy() { document.body.classList.remove('admin-body'); }
+  onLogout() { this.authService.logout(); this.router.navigate(['/login']); }
+
+  // --- SEKME GEÇİŞLERİ ---
+  switchTab(tabName: string) {
+    this.activeTab = tabName;
+    this.resetForm();
+    if (tabName === 'news') this.getNews();
+    else if (tabName === 'slider') this.loadSliderEditor();
+    else if (tabName === 'breaking') this.loadBreakingEditor();
+    else if (tabName === 'videos') this.getVideos();
+    else if (tabName === 'ads') this.getAds();
+    else if (tabName === 'personnel') this.getUsers();
+    else if (tabName === 'columnists') this.getColumnPosts(); // Sadece yazıları çekiyoruz
   }
 
-  // --- GELİŞMİŞ HABER ÇEKME FONKSİYONU ---
+  // --- 1. HABER İŞLEMLERİ ---
   getNews() {
-    this.http.get<any>('http://localhost:3000/api/news').subscribe({
-        next: (response) => {
-            console.log("✅ Backend Cevabı Ham Veri:", response);
-
-            // 1. İhtimal: Sunucu { news: [...] } gönderiyor
-            if (response.news && Array.isArray(response.news)) {
-                this.newsList = response.news;
-            } 
-            // 2. İhtimal: Sunucu direkt [...] gönderiyor
-            else if (Array.isArray(response)) {
-                this.newsList = response;
-            } 
-            // 3. İhtimal: Veri yok veya format değişik
-            else {
-                console.warn("⚠️ Veri formatı beklenmedik:", response);
-                this.newsList = [];
-            }
-
-            console.log("📋 Ekrana Basılacak Liste (newsList):", this.newsList);
-            
-            // ⭐ KRİTİK DOKUNUŞ: Angular'ı ekranı yenilemesi için zorluyoruz
-            this.cdr.detectChanges(); 
-        },
-        error: (err) => {
-            console.error("❌ Haber çekme hatası:", err);
-        }
+    this.http.get<any>(`${this.baseUrl}/api/news`).subscribe(res => {
+        this.newsList = res.news || [];
+        this.cdr.detectChanges();
     });
   }
 
-  // --- SİLME FONKSİYONU ---
-  deleteNews(id: number) {
-      if(confirm('Silmek istediğine emin misin?')) {
-        const token = localStorage.getItem('token');
-        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  saveNews() {
+     if (!this.newsData.title) { alert("Başlık giriniz!"); return; }
+     if (!this.isEditing && !this.cropper) { alert("Resim seçiniz!"); return; }
 
-        this.http.delete(`http://localhost:3000/api/news/${id}`, { headers: headers }).subscribe({
-            next: () => {
-                alert("Haber silindi.");
-                this.getNews(); // Listeyi yenile
-            },
-            error: (err) => alert("Silinemedi: " + err.message)
-        });
+     const formData = new FormData();
+     formData.append('title', this.newsData.title);
+     formData.append('content', this.newsData.content);
+     formData.append('category', this.newsData.category);
+     const token = localStorage.getItem('token');
+     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+     if (this.cropper) {
+        this.cropper.getCroppedCanvas().toBlob((blob: any) => {
+            if (blob) {
+                formData.append('image', blob, 'news-image.jpg');
+                this.sendRequest(formData, headers, 'news');
+            }
+        }, 'image/jpeg', 0.8);
+     } else { this.sendRequest(formData, headers, 'news'); }
+  }
+
+  // --- 2. KÖŞE YAZISI İŞLEMLERİ (GÜNCELLENDİ) ---
+  getColumnPosts() {
+      this.http.get<any>(`${this.baseUrl}/api/column-posts`).subscribe(res => {
+          this.columnPostList = res;
+          this.cdr.detectChanges();
+      });
+  }
+
+  saveColumnPost() {
+      if(!this.postData.title) return alert("Yazı başlığı girmelisiniz!");
+      
+      const token = localStorage.getItem('token');
+      const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+      // Backend'e sadece başlık ve içerik gönderiyoruz.
+      // Backend, 'Authorization' başlığındaki token'ı çözüp Yazarın Kim Olduğunu bulacak.
+      this.http.post(`${this.baseUrl}/api/column-posts`, this.postData, { headers }).subscribe({
+          next: () => {
+              alert("Yazınız başarıyla yayınlandı!"); 
+              this.getColumnPosts(); 
+              this.resetForm();
+          },
+          error: (err) => {
+              console.error(err);
+              alert("Hata: " + (err.error?.message || "Yetkiniz olmayabilir."));
+          }
+      });
+  }
+
+  deleteColumnPost(id: number) {
+      if(confirm('Bu yazıyı silmek istediğine emin misin?')) {
+          const token = localStorage.getItem('token');
+          const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+          
+          this.http.delete(`${this.baseUrl}/api/column-posts/${id}`, { headers }).subscribe({
+              next: () => this.getColumnPosts(),
+              error: (err) => alert(err.error?.message || "Silinemedi.")
+          });
       }
   }
 
-  // --- KAYDETME VE DİĞERLERİ ---
+  // --- 3. PERSONEL YÖNETİMİ ---
+  getUsers() {
+      this.http.get<any>(`${this.baseUrl}/api/users`).subscribe(res => this.userList = res);
+  }
+
+  saveUser() {
+      if(!this.userData.username || !this.userData.password) return alert("Kullanıcı adı ve şifre zorunlu!");
+      
+      const fd = new FormData();
+      fd.append('username', this.userData.username);
+      fd.append('password', this.userData.password);
+      fd.append('full_name', this.userData.full_name);
+      fd.append('role', this.userData.role);
+      fd.append('bio', this.userData.bio);
+
+      // İzinleri (Permissions) role göre otomatik ayarlayabiliriz veya backend halleder.
+      // Şimdilik backend 'role'e göre yetki vermiyor, JSON permission bekliyor.
+      // Basitlik olsun diye burada elle ekleyelim (Veya backend createAdmin gibi yapmalıydı):
+      // NOT: Bu kısmı backend'de 'userController' içinde halletmek daha güvenli ama 
+      // hızlı çözüm için şimdilik 'role' bilgisini gönderiyoruz, backend bunu işleyebilir.
+      // Ancak senin 'authController'ında login olurken permission kontrolü var.
+      // Yeni eklenen kullanıcının permissions sütunu boş kalırsa giriş yapamaz/işlem yapamaz.
+      // Bu yüzden backend'deki 'addUser' fonksiyonu varsayılan permission atamalı.
+      
+      if(this.cropper) {
+          this.cropper.getCroppedCanvas().toBlob((blob: any) => {
+              fd.append('image', blob, 'avatar.jpg');
+              this.http.post(`${this.baseUrl}/api/users`, fd).subscribe(() => {
+                  alert("Personel eklendi!"); this.getUsers(); this.resetForm();
+              });
+          });
+      } else {
+          this.http.post(`${this.baseUrl}/api/users`, fd).subscribe(() => {
+             alert("Personel eklendi!"); this.getUsers(); this.resetForm();
+          });
+      }
+  }
+
+  deleteUser(id: number) {
+      if(confirm('Personel silinsin mi?')) this.http.delete(`${this.baseUrl}/api/users/${id}`).subscribe(() => this.getUsers());
+  }
+
+  // --- ORTAK İSTEK GÖNDERİCİ (Haberler için) ---
+  sendRequest(formData: FormData, headers: HttpHeaders, type: 'news') {
+    if (this.isEditing && this.currentId) {
+        this.http.put(`${this.baseUrl}/api/news/${this.currentId}`, formData, { headers }).subscribe({
+            next: () => { alert('Güncellendi!'); this.resetForm(); this.getNews(); },
+            error: () => alert("Hata oluştu")
+        });
+    } else {
+        this.http.post(`${this.baseUrl}/api/news`, formData, { headers }).subscribe({
+            next: () => { alert('Eklendi!'); this.resetForm(); this.getNews(); },
+            error: () => alert("Hata oluştu")
+        });
+    }
+  }
+
+  // --- DİĞER FONKSİYONLAR ---
+  editItem(item: any, type: 'news') {
+    this.isEditing = true;
+    this.currentId = item.id;
+    this.showForm = true;
+    this.newsData = { title: item.title, category: item.category_name, content: item.content, image: null };
+    
+    if (item.image_path) {
+        setTimeout(() => { this.imageElement.nativeElement.src = this.baseUrl + item.image_path; }, 100);
+    }
+  }
+
+  deleteItem(id: number, type: string) {
+      if(confirm('Silinsin mi?')) {
+          const token = localStorage.getItem('token');
+          const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+          this.http.delete(`${this.baseUrl}/api/${type}/${id}`, { headers }).subscribe(() => {
+            if(type === 'news') this.getNews();
+            if(type === 'videos') this.getVideos();
+            if(type === 'ads') this.getAds();
+          });
+      }
+  }
+
+  resetForm() {
+    this.showForm = false; 
+    this.isEditing = false; 
+    this.selectedFile = false; 
+    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
+    this.userData = { username: '', password: '', full_name: '', role: 'author', bio: '', image: null };
+    this.postData = { title: '', content: '' }; // ID temizlendi
+    if(this.cropper) { this.cropper.destroy(); this.cropper = null; }
+    if(this.imageElement) this.imageElement.nativeElement.src = '';
+  }
+
+  // --- RESİM SEÇME (CROPPER) ---
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -1735,110 +2218,67 @@ export class DashboardComponent implements OnInit, OnDestroy {
       reader.onload = (e: any) => {
         this.imageElement.nativeElement.src = e.target.result;
         if (this.cropper) { this.cropper.destroy(); }
-        this.cropper = new Cropper(this.imageElement.nativeElement, {
-          aspectRatio: 16 / 9, viewMode: 1, autoCropArea: 1,
+        
+        // Personel için kare (1:1), Haber için 16:9
+        const ratio = (this.activeTab === 'personnel') ? 1 : (16 / 9);
+
+        this.cropper = new Cropper(this.imageElement.nativeElement, { 
+            aspectRatio: ratio, 
+            viewMode: 1, 
+            autoCropArea: 1 
         } as any);
       };
       reader.readAsDataURL(file);
     }
   }
 
-  saveNews() {
-     if (!this.newsData.title) { alert("Başlık giriniz!"); return; }
-     
-     // Eğer yeni kayıt yapıyorsak resim şart. Ama düzenliyorsak resim şart değil (eskisi kalabilir).
-     if (!this.isEditing && !this.cropper) { alert("Resim seçiniz!"); return; }
-
-     const formData = new FormData();
-     formData.append('title', this.newsData.title);
-     formData.append('content', this.newsData.content);
-     formData.append('category', this.newsData.category);
-     formData.append('is_breaking', '0');
-     formData.append('is_slider', '1');
-
-     // Token Hazırlığı
-     const token = localStorage.getItem('token');
-     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-     // A) EĞER YENİ RESİM VARSA (Cropper aktifse)
-     if (this.cropper) {
-        this.cropper.getCroppedCanvas().toBlob((blob: any) => {
-            if (blob) {
-                formData.append('image', blob, 'news-image.jpg');
-                this.sendRequest(formData, headers); // İsteği gönder
-            }
-        }, 'image/jpeg', 0.8);
-     } 
-     // B) EĞER YENİ RESİM YOKSA (Sadece metin güncelleniyorsa)
-     else {
-        this.sendRequest(formData, headers);
-     }
+  // --- DİĞERLERİ (MANŞET, VİDEO, REKLAM) ---
+  loadSliderEditor() {
+    this.http.get<any>(`${this.baseUrl}/api/news?type=slider`).subscribe(res => { this.activeSliderNews = res.news || []; });
+    this.loadCandidates('is_slider');
   }
-
-  // İSTEĞİ GÖNDEREN YARDIMCI FONKSİYON (Kod tekrarını önlemek için)
-  sendRequest(formData: FormData, headers: HttpHeaders) {
-    if (this.isEditing && this.currentNewsId) {
-        // GÜNCELLEME (PUT)
-        this.http.put(`http://localhost:3000/api/news/${this.currentNewsId}`, formData, { headers: headers }).subscribe({
-            next: () => {
-                alert('Haber güncellendi!');
-                this.resetForm();
-                this.getNews();
-            },
-            error: (err) => alert("Güncelleme Hatası: " + err.message)
-        });
-    } else {
-        // YENİ KAYIT (POST)
-        this.http.post('http://localhost:3000/api/news', formData, { headers: headers }).subscribe({
-            next: () => {
-                alert('Haber eklendi!');
-                this.resetForm();
-                this.getNews();
-            },
-            error: (err) => alert("Kayıt Hatası: " + err.message)
-        });
-    }
+  loadBreakingEditor() {
+    this.http.get<any>(`${this.baseUrl}/api/news?type=breaking`).subscribe(res => { this.activeBreakingNews = res.news || []; });
+    this.loadCandidates('is_breaking');
   }
-
-  onLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  loadCandidates(excludeType: string) {
+    this.http.get<any>(`${this.baseUrl}/api/news?limit=50`).subscribe(res => {
+        const all = res.news || [];
+        this.candidateNews = all.filter((n: any) => n[excludeType] === 0);
+        this.cdr.detectChanges();
+    });
   }
-
-  editNews(news: any) {
-    this.isEditing = true;
-    this.currentNewsId = news.id;
-    this.showNewsForm = true;
-
-    // Mevcut verileri forma doldur
-    this.newsData = {
-      title: news.title,
-      category: news.category_name || 'GÜNDEM', // Backend'den gelen kategori adı
-      content: news.content,
-      image: null // Resim inputu boş kalır, kullanıcı isterse değiştirir
-    };
-
-    // Varsa mevcut resmi önizlemeye koy (Cropper olmadan sadece göster)
-    if (news.image_path) {
-        setTimeout(() => {
-            this.imageElement.nativeElement.src = this.baseUrl + news.image_path;
-            // Cropper'ı başlatmıyoruz, kullanıcı yeni resim seçerse başlar
-        }, 100);
-    }
+  toggleNewsStatus(id: number, type: 'is_slider' | 'is_breaking', status: boolean) {
+    const value = status ? 1 : 0;
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    this.http.patch(`${this.baseUrl}/api/news/${id}/toggle`, { field: type, value }, { headers }).subscribe({
+        next: () => {
+            if (this.activeTab === 'slider') this.loadSliderEditor();
+            else if (this.activeTab === 'breaking') this.loadBreakingEditor();
+        }
+    });
   }
-
-  resetForm() {
-    this.showNewsForm = false;
-    this.isEditing = false;
-    this.currentNewsId = null;
-    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
-    this.selectedFile = false;
-    if (this.cropper) { this.cropper.destroy(); this.cropper = null; }
-    this.imageElement.nativeElement.src = '';
+  getVideos() { this.http.get<any>(`${this.baseUrl}/api/videos`).subscribe(res => { this.videoList = res; }); }
+  saveVideo() { 
+      if(!this.videoData.title || !this.videoData.url) return alert("Eksik");
+      this.http.post(`${this.baseUrl}/api/videos`, this.videoData).subscribe(() => { alert("Eklendi"); this.getVideos(); });
   }
+  deleteVideo(id: number) { this.http.delete(`${this.baseUrl}/api/videos/${id}`).subscribe(() => this.getVideos()); }
 
-  
-
+  getAds() { this.http.get<any>(`${this.baseUrl}/api/ads`).subscribe(res => { this.adList = res; }); }
+  saveAd() { 
+      const input = document.getElementById('adFile') as HTMLInputElement;
+      if(input.files && input.files[0]) {
+          const fd = new FormData();
+          fd.append('image', input.files[0]);
+          fd.append('title', this.adData.title);
+          fd.append('target_url', this.adData.target_url);
+          fd.append('area', this.adData.area);
+          this.http.post(`${this.baseUrl}/api/ads`, fd).subscribe(() => { alert("Eklendi"); this.getAds(); });
+      }
+  }
+  deleteAd(id: number) { this.http.delete(`${this.baseUrl}/api/ads/${id}`).subscribe(() => this.getAds()); }
 }
 
 ============================================================
@@ -2403,6 +2843,12 @@ DOSYA YOLU: frontend\src\app\components\news-detail\news-detail.html
     <div *ngIf="!loading && news" class="row justify-content-center fade-in">
         <div class="col-lg-9">
             
+            <div class="mb-4">
+                <a routerLink="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm hover-scale">
+                    <i class="fas fa-arrow-left me-2"></i> Anasayfaya Dön
+                </a>
+            </div>
+
             <div class="d-flex align-items-center gap-3 mb-3">
                 <span class="badge bg-primary px-3 py-2">{{ news.category_name || 'Gündem' }}</span>
                 <span class="text-muted small"><i class="far fa-clock me-1"></i> {{ news.created_at | date:'dd.MM.yyyy HH:mm' }}</span>

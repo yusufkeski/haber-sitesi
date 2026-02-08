@@ -1,4 +1,3 @@
-// backend/controllers/authController.js
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -17,35 +16,49 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // 3. Veritabanına kaydet
-    // Varsayılan rol 'author' (yazar) olarak atanır
-    const sql = 'INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)';
-    await db.query(sql, [username, hashedPassword, full_name, 'author']);
+    // Varsayılan rol 'author' (yazar) ve izin 'can_post_column' (yazı yazabilir) olarak atanır
+    const defaultPermissions = JSON.stringify({ can_post_column: true });
+    
+    const sql = 'INSERT INTO users (username, password_hash, full_name, role, permissions) VALUES (?, ?, ?, ?, ?)';
+    await db.query(sql, [username, hashedPassword, full_name, 'author', defaultPermissions]);
 
     res.status(201).json({ message: 'Kullanıcı başarıyla oluşturuldu.' });
 };
 
 exports.login = async (req, res) => {
     const { username, password } = req.body;
-
-    // 1. Kullanıcıyı bul
+    
     const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (users.length === 0) {
-        return res.status(400).json({ message: 'Kullanıcı adı veya şifre hatalı.' });
-    }
+    if (users.length === 0) return res.status(400).json({ message: 'Kullanıcı bulunamadı.' });
 
     const user = users[0];
-
-    // 2. Şifreyi kontrol et (Hash kıyaslama)
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-        return res.status(400).json({ message: 'Kullanıcı adı veya şifre hatalı.' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Şifre hatalı.' });
 
-    // 3. Token oluştur (Dijital Kimlik)
+    // --- İZİN KONTROLÜ (Düzeltilmiş Tek Blok) ---
+    let userPermissions = {};
+    try {
+        if (user.permissions) {
+            // Eğer veritabanından string gelirse JSON'a çevir, zaten obje ise direkt al
+            userPermissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions;
+        } else {
+            userPermissions = {}; // Null ise boş obje yap
+        }
+    } catch (e) {
+        userPermissions = {};
+    }
+    // -------------------------------------------
+
+    // Token oluştur
     const token = jwt.sign(
-        { id: user.id, role: user.role, username: user.username },
+        { 
+            id: user.id, 
+            role: user.role, 
+            username: user.username,
+            permissions: userPermissions 
+        },
         process.env.JWT_SECRET,
-        { expiresIn: '1d' } // Token 1 gün geçerli
+        { expiresIn: '1d' }
     );
 
     res.json({
@@ -55,7 +68,8 @@ exports.login = async (req, res) => {
             id: user.id,
             username: user.username,
             full_name: user.full_name,
-            role: user.role
+            role: user.role,
+            permissions: userPermissions
         }
     });
 };

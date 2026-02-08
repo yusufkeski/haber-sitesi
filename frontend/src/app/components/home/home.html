@@ -1,7 +1,9 @@
 <div class="top-bar py-2 d-none d-md-block bg-dark text-white">
     <div class="container d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3 small">
-            <span class="opacity-75">8 Şubat 2026 Pazar</span>
+            <span class="opacity-75">
+                {{ today | date:'d MMMM yyyy EEEE':'':'tr-TR' }}
+            </span>
             <span class="opacity-25">|</span>
             
             <span class="fw-bold text-warning d-flex align-items-center" *ngIf="weather$ | async as w; else loadingWeather">
@@ -43,10 +45,16 @@
                 </a>
             </div>
             <div class="col-md-8">
-                <div class="d-flex align-items-center justify-content-center bg-light border rounded-4 mx-auto" style="height: 90px; max-width: 728px; border-style: dashed !important;">
-                    <span class="text-secondary small fw-bold text-uppercase">REKLAM ALANI</span>
-                </div>
-            </div>
+    <div class="d-flex align-items-center justify-content-center bg-light border rounded-4 mx-auto overflow-hidden" 
+         style="height: 90px; max-width: 728px; border-style: dashed !important;">
+
+        <a *ngIf="headerAd" [href]="headerAd.target_url || '#'" target="_blank" class="w-100 h-100 d-block">
+            <img [src]="baseUrl + headerAd.image_path" class="w-100 h-100" style="object-fit: cover;" [title]="headerAd.title">
+        </a>
+
+        <span *ngIf="!headerAd" class="text-secondary small fw-bold text-uppercase">REKLAM ALANI (728x90)</span>
+    </div>
+</div>
         </div>
     </div>
 </header>
@@ -133,21 +141,48 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="bg-white d-flex align-items-center justify-content-center border rounded-4 mb-4 shadow-sm" style="height: 300px; border-style: dashed !important;">
+            <div *ngIf="sidebarAds.length > 0" class="d-flex flex-column gap-4 mb-4">
+    <div *ngFor="let ad of sidebarAds" class="bg-white border rounded-4 shadow-sm overflow-hidden text-center" style="min-height: 300px;">
+        <a [href]="ad.target_url || '#'" target="_blank" class="d-block w-100 h-100">
+            <img [src]="baseUrl + ad.image_path" class="img-fluid" [title]="ad.title">
+        </a>
+    </div>
+</div>
+
+<div *ngIf="sidebarAds.length === 0" class="bg-white d-flex align-items-center justify-content-center border rounded-4 mb-4 shadow-sm" style="height: 300px; border-style: dashed !important;">
     <span class="text-secondary small fw-bold">DİKEY REKLAM ALANI</span>
 </div>
 
             <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-5">
-    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
-        <h5 class="fw-bold mb-0 text-secondary border-start border-4 border-primary ps-3">Köşe Yazarları</h5>
-    </div>
+                <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                    <h5 class="fw-bold mb-0 text-secondary border-start border-4 border-primary ps-3">Köşe Yazıları</h5>
+                </div>
 
-    <div class="text-center text-muted py-5 bg-light rounded-3 border border-light-subtle">
-        <i class="fas fa-feather-alt fa-2x mb-3 opacity-50"></i>
-        <p class="mb-0 small fw-bold">Henüz köşe yazısı girilmedi.</p>
-    </div>
+                <div *ngIf="columnPosts.length > 0" class="d-flex flex-column gap-3">
+                    <div *ngFor="let post of columnPosts" class="d-flex align-items-start gap-3 border-bottom pb-3 last-no-border">
+                        <img *ngIf="post.author_image" [src]="baseUrl + post.author_image" 
+                             class="rounded-circle border border-2 border-light shadow-sm" 
+                             width="60" height="60" style="object-fit: cover;">
+                        
+                        <div *ngIf="!post.author_image" 
+                             class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-sm" 
+                             style="width: 60px; height: 60px;">
+                             {{ post.author_name?.charAt(0) }}
+                        </div>
 
-    </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">{{ post.title }}</h6>
+                            <span class="d-block small text-primary fw-bold mb-1">{{ post.author_name }}</span>
+                            <a [routerLink]="['/yazi', post.id]" class="small text-muted text-decoration-underline fst-italic" style="cursor: pointer;">Yazıyı Oku</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="columnPosts.length === 0" class="text-center text-muted py-5 bg-light rounded-3 border border-light-subtle">
+                    <i class="fas fa-feather-alt fa-2x mb-3 opacity-50"></i>
+                    <p class="mb-0 small fw-bold">Henüz köşe yazısı girilmedi.</p>
+                </div>
+            </div>
         </div>
     </div>
 </main>
@@ -182,7 +217,7 @@
     </div>
 </footer>
 
-<a href="https://wa.me/905xxxxxxxxx" class="whatsapp-float" target="_blank">
+<a href="https://wa.me/905369932055" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp fa-lg"></i>
     <span class="d-none d-md-inline ms-2">İhbar Hattı</span>
 </a>
