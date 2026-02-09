@@ -1,0 +1,58 @@
+<div class="bg-light min-vh-100 py-5">
+    <div class="container">
+        
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+            <h2 class="fw-bold text-dark m-0 border-start border-5 border-primary ps-3 text-uppercase">
+                {{ title }}
+            </h2>
+            <span class="badge bg-secondary rounded-pill px-3 py-2" *ngIf="newsList.length > 0">
+                {{ newsList.length }} Haber
+            </span>
+        </div>
+    
+        <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="mt-3 text-muted">Haberler yükleniyor...</p>
+        </div>
+    
+        <div *ngIf="!loading && newsList.length > 0" class="row g-4">
+            <div *ngFor="let news of newsList" class="col-12 col-sm-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm hover-scale overflow-hidden rounded-4">
+                    
+                    <div class="position-relative" style="height: 200px;">
+                        <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 h-100" style="object-fit: cover;">
+                        <div *ngIf="!news.image_path" class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white">
+                            <i class="fas fa-image fa-2x"></i>
+                        </div>
+
+                        <span class="position-absolute top-0 start-0 m-2 badge bg-primary shadow-sm">
+                            {{ news.category || news.category_name || 'Genel' }}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title fw-bold text-dark mb-2 lh-base">
+                            <a [routerLink]="['/haber', news.slug]" class="text-decoration-none text-dark stretched-link">
+                                {{ news.title | uppercase }}
+                            </a>
+                        </h6>
+                        <div class="mt-auto d-flex align-items-center text-muted small">
+                            <i class="far fa-clock me-1"></i>
+                            {{ news.created_at | date:'dd.MM.yyyy' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div *ngIf="!loading && newsList.length === 0" class="text-center py-5 my-5 bg-white rounded-4 shadow-sm">
+            <i class="fas fa-search fa-4x text-muted mb-4 opacity-25"></i>
+            <h4 class="text-dark fw-bold">Sonuç Bulunamadı</h4>
+            <p class="text-muted mb-4">Bu kategoride henüz haber eklenmemiş veya aradığınız kelime bulunamadı.</p>
+            <a routerLink="/" class="btn btn-primary px-4 py-2 rounded-pill fw-bold">
+                <i class="fas fa-home me-2"></i> Anasayfaya Dön
+            </a>
+        </div>
+    
+    </div>
+</div>

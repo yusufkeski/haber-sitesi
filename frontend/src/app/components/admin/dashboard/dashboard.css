@@ -83,3 +83,11 @@
     overflow: hidden;
     background-color: #333;
 }
+
+/* Tablodaki resimleri optimize et */
+table img {
+    width: 50px;       /* Genişlik sabit */
+    height: 50px;      /* Yükseklik sabit */
+    object-fit: cover; /* Resmi kutuya sığdır, sünmesin */
+    border-radius: 4px;
+}

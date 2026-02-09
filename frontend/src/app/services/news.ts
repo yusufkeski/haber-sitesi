@@ -1,28 +1,32 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http'; // <-- HttpHeaders Eklendi
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NewsService {
-  private baseUrl = 'http://localhost:3000/api'; // Ana API kökü (Değiştirdik)
+  private baseUrl = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient) { }
 
-  // 1. Haberleri Getir (api/news)
   getAllNews(page: number = 1): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/news?page=${page}`);
   }
 
-  // 2. Tek Haber Getir (api/news/slug)
   getNewsBySlug(slug: string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/news/${slug}`);
   }
+  
+  getNewsByCategory(category: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/news/category/${category}`);
+  }
 
-  // 3. Köşe Yazılarını Getir (api/column-posts)
+  searchNews(query: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/news/search?q=${query}`);
+  }
+
   getColumnPosts(): Observable<any> {
-    // BURASI DÜZELDİ: Artık /news altına değil, direkt /api altına gidiyor
     return this.http.get<any>(`${this.baseUrl}/column-posts`);
   }
 
@@ -32,5 +36,19 @@ export class NewsService {
 
   getAds(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/ads`);
+  }
+
+  // --- İŞTE DÜZELTİLMESİ GEREKEN YER BURASI ---
+  toggleStatus(id: number, field: string, status: boolean): Observable<any> {
+    // 1. Token'ı kutudan çıkar
+    const token = localStorage.getItem('token');
+    
+    // 2. Kafa kağıdını (Header) hazırla
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    
+    const payload = { field, status };
+    
+    // 3. İsteği gönderirken headers'ı da ekle! ({ headers })
+    return this.http.put(`${this.baseUrl}/news/${id}/status`, payload, { headers });
   }
 }

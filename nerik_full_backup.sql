@@ -29,10 +29,13 @@ CREATE TABLE IF NOT EXISTS `ads` (
   `is_active` tinyint(1) DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- nerik_db.ads: 0 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `ads` DISABLE KEYS */;
+INSERT INTO `ads` (`id`, `title`, `image_path`, `target_url`, `area`, `is_active`, `created_at`) VALUES
+	(1, 'adcac', '/uploads/1770585228366.jpeg', 'asvadcav', 'sidebar', 1, '2026-02-08 21:13:48'),
+	(2, 'fiş', '/uploads/1770590495875.webp', 'https://www.google.com/', 'header', 1, '2026-02-08 22:41:35');
 /*!40000 ALTER TABLE `ads` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.categories
@@ -56,31 +59,20 @@ INSERT INTO `categories` (`id`, `name`, `slug`, `color`) VALUES
 -- tablo yapısı dökülüyor nerik_db.column_posts
 CREATE TABLE IF NOT EXISTS `column_posts` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `columnist_id` int DEFAULT NULL,
+  `user_id` int NOT NULL,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `view_count` int DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `columnist_id` (`columnist_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `user_id` (`user_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- nerik_db.column_posts: 0 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `column_posts` DISABLE KEYS */;
+INSERT INTO `column_posts` (`id`, `user_id`, `title`, `content`, `view_count`, `created_at`) VALUES
+	(3, 2, 'Emreye GÖTTEN Basmışlar', '<p>Geçen gün Emreyi bir siktim dağlar taşlar dile geldi.</p>', 0, '2026-02-08 21:55:32');
 /*!40000 ALTER TABLE `column_posts` ENABLE KEYS */;
-
--- tablo yapısı dökülüyor nerik_db.columnists
-CREATE TABLE IF NOT EXISTS `columnists` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- nerik_db.columnists: 0 rows tablosu için veriler indiriliyor
-/*!40000 ALTER TABLE `columnists` DISABLE KEYS */;
-/*!40000 ALTER TABLE `columnists` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.news
 CREATE TABLE IF NOT EXISTS `news` (
@@ -102,13 +94,14 @@ CREATE TABLE IF NOT EXISTS `news` (
   UNIQUE KEY `slug` (`slug`),
   KEY `category_id` (`category_id`),
   KEY `author_id` (`author_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- nerik_db.news: 0 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `news` DISABLE KEYS */;
 INSERT INTO `news` (`id`, `title`, `slug`, `summary`, `content`, `image_path`, `category_id`, `author_id`, `status`, `view_count`, `is_breaking`, `is_slider`, `created_at`, `updated_at`) VALUES
-	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 7, 0, 0, '2026-02-08 18:07:34', '2026-02-08 20:21:46'),
-	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p>', '/uploads/1770578141018.jpg', NULL, 2, 'published', 2, 1, 1, '2026-02-08 19:15:41', '2026-02-08 20:21:46');
+	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 7, 0, 0, '2026-02-08 18:07:34', '2026-02-08 22:53:20'),
+	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler-1770590892780', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p><p></p><p>https://www.youtube.com/watch?v=yr7mYngK1Xc&amp;pp=ygUWa8O8cnQgdHJhdmVzdGkgxZ9hcmvEsdIHCQmRCgGHKiGM7w%3D%3D</p>', '/uploads/1770578141018.jpg', 3, 2, 'published', 9, 0, 0, '2026-02-08 19:15:41', '2026-02-08 22:52:59'),
+	(4, 'Bakire Anteplinin Hazin Sonu ...', 'bakire-anteplinin-hazin-sonu-1770590909931', NULL, '<p>Antepli bakire genç <strong><u>Erdal Muhittin Sikikalkan,</u></strong> Sultan Taş adlı şahıs tarafından sikilerek öldürüldü. </p>', '/uploads/1770590676323.jpg', 2, 3, 'published', 2, 1, 1, '2026-02-08 22:44:36', '2026-02-08 22:53:48');
 /*!40000 ALTER TABLE `news` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.settings
@@ -132,14 +125,16 @@ CREATE TABLE IF NOT EXISTS `users` (
   `permissions` json DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `image_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.users: 1 rows tablosu için veriler indiriliyor
+-- nerik_db.users: 2 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `role`, `permissions`, `is_active`, `created_at`) VALUES
-	(2, 'admin', '$2b$10$vpgtTA51GVgFZZpKJgFwcODV8gjWEhTpmH/crgj70Wpj8yCCzHYJ2', 'Osman Bey', 'admin', '{"all": true}', 1, '2026-02-08 14:12:57');
+INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `role`, `permissions`, `is_active`, `created_at`, `image_path`) VALUES
+	(2, 'admin', '$2b$10$vpgtTA51GVgFZZpKJgFwcODV8gjWEhTpmH/crgj70Wpj8yCCzHYJ2', 'admin', 'admin', '{"all": true}', 1, '2026-02-08 14:12:57', NULL),
+	(3, 'yusufseksi', '$2b$10$txr0hbMElcy9h4i7QYiIjevhO2q6OjdgQ9divFfRhHrU/.PQnnxQ6', 'Yusuf Keski', 'editor', '{"can_edit_news": true}', 1, '2026-02-08 22:32:46', '/uploads/1770589966617.jpg');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.videos

@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NewsService } from '../../services/news';
-import { Observable, map, catchError, of } from 'rxjs';
-import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -12,85 +12,129 @@ import { RouterModule } from '@angular/router';
   templateUrl: './home.html',
   styleUrls: ['./home.css']
 })
-export class HomeComponent implements OnInit {
-  today: Date = new Date();// [cite: 432] Şimdiki zamanı yakala
-// ... diğer değişkenler (latestNews, weather$ vb.) aynı kalsın [cite: 432, 434]
+export class HomeComponent implements OnInit, OnDestroy {
+  // Değişkenler
+  today: Date = new Date();
   latestNews: any[] = [];
   sliderNews: any[] = [];
-  columnPosts: any[] = []; // YENİ: Köşe yazıları listesi
+  columnPosts: any[] = [];
   breakingNews: string = '';
   baseUrl = 'http://localhost:3000';
   headerAd: any = null;
   sidebarAds: any[] = [];
   
+  // SLIDER İÇİN YENİ DEĞİŞKENLER
+  currentSlideIndex: number = 0;
+  autoSlideInterval: any;
+
   weather$!: Observable<{ temp: string, icon: string }>;
+  private routerSubscription!: Subscription;
 
   constructor(
     private newsService: NewsService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit() {
-    this.today = new Date(); // [cite: 434] Sayfa her yüklendiğinde tarihi tazele
-    this.getNews();// [cite: 434]
-    this.getNews();
-    this.getColumnPosts(); // YENİ: Yazıları çağır
-    this.getNews();
-    this.getColumnPosts();
-    this.getAds();
-    
-    // Hava Durumu (Aynı kalıyor)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=41.1436&longitude=35.4552&current_weather=true&t=${Date.now()}`;
-    this.weather$ = this.http.get(url).pipe(
-      map((res: any) => {
-        if (res && res.current_weather) {
-          return {
-            temp: Math.round(res.current_weather.temperature).toString(),
-            icon: this.getWeatherIconClass(res.current_weather.weathercode)
-          };
-        }
-        return { temp: '--', icon: 'fa-sun' };
-      }),
-      catchError(err => of({ temp: '!!', icon: 'fa-exclamation-triangle' }))
-    );
-  }
+    this.loadAllData();
 
-  getNews() {
-    this.newsService.getAllNews().subscribe({
-      next: (response) => {
-        const news = response.news || [];
-        this.sliderNews = news.filter((n: any) => n.is_slider);
-        const breaking = news.find((n: any) => n.is_breaking);
-        this.breakingNews = breaking ? breaking.title : 'Vezirköprü\'den en güncel haberler...';
-        this.latestNews = news; 
+    this.routerSubscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        if (event.url === '/' || event.url === '/home') {
+           this.loadAllData();
+        }
       }
     });
   }
 
-  // YENİ: Köşe Yazılarını Çeken Fonksiyon
-  getColumnPosts() {
-    this.newsService.getColumnPosts().subscribe({
-      next: (data) => {
-        this.columnPosts = data || [];
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+    this.stopAutoSlide(); // Sayfadan çıkınca dönmeyi durdur
+  }
+
+  loadAllData() {
+    this.today = new Date();
+    this.getNews();
+    this.getColumnPosts();
+    this.getAds();
+  }
+
+  getNews() {
+    this.newsService.getAllNews().subscribe({
+      next: (data: any) => {
+        const newsArray = data.news ? data.news : data;
+        
+        if (Array.isArray(newsArray)) {
+          this.latestNews = newsArray;
+          
+          // Slider Haberleri
+          this.sliderNews = newsArray.filter((n: any) => n.is_slider);
+          
+          // Slider geldiyse otomatik döndürmeyi başlat
+          if (this.sliderNews.length > 0) {
+            this.startAutoSlide();
+          }
+
+          // Son Dakika
+          const breaking = newsArray.filter((n: any) => n.is_breaking);
+          this.breakingNews = breaking.map((n: any) => n.title).join(' • ');
+        }
       },
-      error: (err) => console.error("Köşe yazıları alınamadı:", err)
+      error: (err) => console.error("Haber çekme hatası:", err)
     });
   }
 
-  getWeatherIconClass(code: number): string {
-    // ... (Eski kodlar aynı)
-    if (code === 0) return 'fa-sun';
-    if (code >= 1 && code <= 3) return 'fa-cloud-sun';
-    return 'fa-cloud';
+  getColumnPosts() {
+    this.newsService.getColumnPosts().subscribe(data => {
+      this.columnPosts = data;
+    });
   }
 
   getAds() {
-    this.newsService.getAds().subscribe({
-        next: (ads: any[]) => {
-            // Backend'den gelen reklamları 'area'sına göre ayır
-            this.headerAd = ads.find(a => a.area === 'header');
-            this.sidebarAds = ads.filter(a => a.area === 'sidebar');
-        }
+    this.newsService.getAds().subscribe((ads: any[]) => {
+      this.headerAd = ads.find(a => a.area === 'header');
+      this.sidebarAds = ads.filter(a => a.area === 'sidebar');
     });
+  }
+
+  // --- SLIDER FONKSİYONLARI ---
+
+  // Sonraki Slayt
+  nextSlide() {
+    if (this.sliderNews.length > 0) {
+      this.currentSlideIndex = (this.currentSlideIndex + 1) % this.sliderNews.length;
+    }
+  }
+
+  // Önceki Slayt
+  prevSlide() {
+    if (this.sliderNews.length > 0) {
+      this.currentSlideIndex = (this.currentSlideIndex - 1 + this.sliderNews.length) % this.sliderNews.length;
+    }
+  }
+
+  // Belirli Slayta Git (Noktalara basınca)
+  goToSlide(index: number) {
+    this.currentSlideIndex = index;
+    this.stopAutoSlide(); // Kullanıcı müdahale ettiyse durdur
+    this.startAutoSlide(); // Sonra tekrar başlat
+  }
+
+  // Otomatik Dönmeyi Başlat
+  startAutoSlide() {
+    this.stopAutoSlide(); // Çakışma olmasın diye önce temizle
+    this.autoSlideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 5000); // 5 Saniyede bir döner
+  }
+
+  // Otomatik Dönmeyi Durdur (Mouse üzerine gelince vb.)
+  stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
   }
 }

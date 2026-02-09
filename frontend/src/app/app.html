@@ -1,1 +1,115 @@
+<div *ngIf="!isAdminPage && !isLoginPage">
+    
+    <div class="top-bar py-2 d-none d-md-block bg-dark text-white">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3 small">
+                <span class="opacity-75">
+                    <i class="far fa-calendar-alt me-2"></i>
+                    {{ today | date:'d MMMM yyyy EEEE':'':'tr-TR' }}
+                </span>
+                <span class="opacity-25">|</span>
+                <span class="fw-bold text-warning d-flex align-items-center" *ngIf="weather$ | async as w">
+                    <i class="fas me-2" [ngClass]="w.icon"></i> Vezirköprü {{ w.temp }}°C
+                </span>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3 d-flex align-items-center" routerLink="/">
+                <span class="bg-white text-primary rounded px-2 me-2">N</span>ERİK
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-bold text-uppercase gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">ANASAYFA</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/category', 'GÜNDEM']" routerLinkActive="active">GÜNDEM</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/category', 'SPOR']" routerLinkActive="active">SPOR</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/category', 'EKONOMİ']" routerLinkActive="active">EKONOMİ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/category', 'TEKNOLOJİ']" routerLinkActive="active">TEKNOLOJİ</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex position-relative" style="max-width: 250px;">
+                    <input #searchInput 
+                           class="form-control rounded-pill pe-5 border-0 bg-white bg-opacity-25 text-white placeholder-white" 
+                           type="search" 
+                           placeholder="Haber Ara..." 
+                           (keyup.enter)="onSearch(searchInput.value)">
+                    <button class="btn btn-link position-absolute end-0 top-0 text-white" 
+                            (click)="onSearch(searchInput.value)">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+
 <router-outlet></router-outlet>
+
+<footer class="bg-dark text-white pt-5 pb-4 mt-auto" *ngIf="!isAdminPage && !isLoginPage">
+    <div class="container">
+        <div class="row g-4 justify-content-between">
+            <div class="col-lg-4">
+                <div class="mb-4">
+                    <span class="bg-primary text-white fs-4 fw-bold rounded px-2">N</span>
+                    <span class="fs-4 fw-bold ms-1">ERİK</span>
+                </div>
+                <p class="text-white-50">Vezirköprü'nün en hızlı, en güvenilir ve en tarafsız haber kaynağı. Gündemi bizimle takip edin.</p>
+                <div class="d-flex gap-3 mt-4">
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-6">
+                <h6 class="fw-bold mb-3 text-uppercase text-primary">Hızlı Menü</h6>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a routerLink="/" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Anasayfa</a></li>
+                    <li><a [routerLink]="['/category', 'GÜNDEM']" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Gündem</a></li>
+                    <li><a [routerLink]="['/category', 'SPOR']" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Spor</a></li>
+                    <li><a [routerLink]="['/category', 'EKONOMİ']" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Ekonomi</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-3 col-6">
+                <h6 class="fw-bold mb-3 text-uppercase text-primary">Kurumsal</h6>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Künye</a></li>
+                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>İletişim</a></li>
+                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Gizlilik Politikası</a></li>
+                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Çerez Politikası</a></li>
+                </ul>
+            </div>
+            
+            </div>
+        
+        <hr class="border-secondary my-4">
+        
+        <div class="text-center text-white-50 small">
+            &copy; 2026 Nerik Dijital Medya. Tüm hakları saklıdır.
+        </div>
+    </div>
+</footer>

@@ -4,6 +4,7 @@ import { HomeComponent } from './components/home/home';
 import { DashboardComponent } from './components/admin/dashboard/dashboard';
 import { authGuard } from './guards/auth-guard';
 import { NewsDetailComponent } from './components/news-detail/news-detail';
+import { NewsListComponent } from './components/news-list/news-list';
 
 export const routes: Routes = [
     // 1. Site açılınca direkt Anasayfaya git
@@ -18,6 +19,9 @@ export const routes: Routes = [
     { path: 'admin', component: DashboardComponent },
 
     { path: 'admin', component: DashboardComponent, canActivate: [authGuard] },
+
+    { path: 'category/:name', component: NewsListComponent },
+    { path: 'search', component: NewsListComponent },
 
     { path: 'yazi/:id', loadComponent: () => import('./components/column-post-detail/column-post-detail').then(m => m.ColumnPostDetailComponent) },
 ];
