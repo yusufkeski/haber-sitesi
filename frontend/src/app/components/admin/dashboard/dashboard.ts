@@ -6,25 +6,29 @@ import { FormsModule } from '@angular/forms';
 import { QuillModule } from 'ngx-quill';
 import Cropper from 'cropperjs';
 import { DomSanitizer } from '@angular/platform-browser';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
 
 // Servisler
 import { AuthService } from '../../../services/auth';
 import { NewsService } from '../../../services/news'; 
+import { DashboardService } from '../../../services/dashboard';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, QuillModule],
+  imports: [CommonModule, RouterModule, FormsModule, QuillModule, BaseChartDirective],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  activeTab: string = 'news'; 
+  activeTab: string = 'overview'; 
   showForm: boolean = false;
   isEditing: boolean = false;
   currentId: number | null = null;
   currentUser: any = null;
   selectedFile: boolean = false;
+  stats: any = null;
   
   baseUrl = 'http://localhost:3000'; 
   @ViewChild('imageElement') imageElement!: ElementRef;
@@ -50,13 +54,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
   userData = { username: '', password: '', full_name: '', role: 'author', image: null };
   postData = { title: '', content: '' }; 
 
+  // 1. PASTA GRAFİK (Editör Performansı)
+  pieChartData: ChartConfiguration<'pie'>['data'] = {
+    labels: [],
+    datasets: [{ data: [] }]
+  };
+  pieChartOptions: ChartOptions<'pie'> = { responsive: true };
+
+  // 2. BAR GRAFİK (En Çok Okunanlar)
+  barChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: [{ data: [], label: 'Okunma Sayısı', backgroundColor: '#0d6efd' }]
+  };
+  barChartOptions: ChartOptions<'bar'> = { responsive: true };
+
+  // 3. GENİŞ BAR GRAFİK (Son 7 Günde Eklenen Haberler)
+  recentNewsData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: [{ 
+        data: [], 
+        label: 'Okunma Sayısı', 
+        backgroundColor: '#6610f2', // Mor renk olsun, diğerinden ayrılsın
+        barPercentage: 0.5 // Çubuklar çok kalın olmasın
+    }]
+  };
+  recentNewsOptions: ChartOptions<'bar'> = { 
+      responsive: true,
+      maintainAspectRatio: false, // Boyutlandırmayı biz kontrol edelim
+      scales: {
+          y: { beginAtZero: true }
+      }
+  };
+
   constructor(
     private authService: AuthService, 
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     public sanitizer: DomSanitizer,
-    private newsService: NewsService 
+    private newsService: NewsService, 
+    private dashboardService: DashboardService
   ) {}
 
   ngOnInit() {
@@ -73,6 +110,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
          this.activeTab = '';
       }
     }
+  }
+
+  // --- İSTATİSTİKLERİ ÇEK VE GRAFİĞE DÖK ---
+  loadStats() {
+      this.dashboardService.getStats().subscribe(res => {
+          this.stats = res;
+
+          // Pasta Grafik Verisi (Editörler)
+          if(res.authorStats) {
+              this.pieChartData = {
+                  labels: res.authorStats.map((a: any) => a.full_name),
+                  datasets: [{ data: res.authorStats.map((a: any) => a.news_count) }]
+              };
+          }
+
+          // Bar Grafik Verisi (En Çok Okunanlar)
+          if(res.topNews) {
+              this.barChartData = {
+                  labels: res.topNews.map((n: any) => n.title.substring(0, 15) + '...'), // Başlık çok uzunsa kısalt
+                  datasets: [{ data: res.topNews.map((n: any) => n.view_count), label: 'Okunma', backgroundColor: '#0d6efd' }]
+              };
+          }
+
+          // 3. YENİ GENİŞ BAR GRAFİK (Son 7 Gün Haberleri)
+          if(res.last7Days) {
+              this.recentNewsData = {
+                  // Etiket olarak: "Haber Başlığı (Tarih)"
+                  labels: res.last7Days.map((n: any) => `${n.title.substring(0, 20)}.. (${n.short_date})`),
+                  datasets: [{
+                      data: res.last7Days.map((n: any) => n.view_count),
+                      label: 'Bu Haberin Okunma Sayısı',
+                      backgroundColor: '#6610f2', // Mor
+                      hoverBackgroundColor: '#520dc2'
+                  }]
+              };
+          }
+
+          
+          this.cdr.detectChanges();
+      });
   }
 
   // --- YETKİ KONTROLÜ ---
@@ -96,7 +173,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.resetForm();
     
     // Hangi sekmeye geçildiyse onun verisini yükle
-    if (tabName === 'news') this.getNews();
+    if (tabName === 'overview') this.loadStats();
+    else if (tabName === 'news') this.getNews();
     else if (tabName === 'slider') this.loadSliderEditor();
     else if (tabName === 'breaking') this.loadBreakingEditor();
     else if (tabName === 'videos') this.getVideos();
@@ -346,5 +424,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  getLast7DaysLabels(): string[] {
+    const dates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      dates.push(`${day}.${month}`);
+    }
+    return dates;
   }
 }

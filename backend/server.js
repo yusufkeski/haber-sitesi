@@ -10,6 +10,7 @@ const newsRoutes = require('./routes/newsRoutes'); // <-- Artık bu dosyayı kul
 const contentController = require('./controllers/contentController');
 const userController = require('./controllers/userController');
 const checkAuth = require('./middleware/authMiddleware'); // Köşe yazıları için lazım
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -18,6 +19,7 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/dashboard', dashboardRoutes);
 
 // Resim klasörünü dışarı aç
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));

@@ -6,6 +6,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import { registerLocaleData } from '@angular/common';
 import localeTr from '@angular/common/locales/tr';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 registerLocaleData(localeTr);
 
@@ -19,6 +20,7 @@ export const appConfig: ApplicationConfig = {
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
     }),
-    { provide: LOCALE_ID, useValue: 'tr-TR' }
+    { provide: LOCALE_ID, useValue: 'tr-TR' },
+    provideCharts(withDefaultRegisterables())
   ]
 };
