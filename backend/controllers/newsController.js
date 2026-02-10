@@ -82,17 +82,30 @@ exports.searchNews = async (req, res) => {
     }
 };
 
-// 4. Tek Haber Getir
+// 4. Tek Haber Getir (Yazar Bilgisiyle Birlikte)
 exports.getNewsBySlug = async (req, res) => {
     try {
+        const slug = req.params.slug;
+
+        // 1. Önce okunma sayısını artır
+        await db.query('UPDATE news SET view_count = view_count + 1 WHERE slug = ?', [slug]);
+
+        // 2. Haberi çekerken USERS tablosuyla birleştir (JOIN)
+        // u.full_name -> author_name olarak, u.image_path -> author_image olarak gelecek
         const sql = `
-            SELECT n.*, c.name as category 
+            SELECT n.*, 
+                   c.name as category_name,
+                   u.full_name as author_name,
+                   u.image_path as author_image
             FROM news n 
             LEFT JOIN categories c ON n.category_id = c.id 
+            LEFT JOIN users u ON n.author_id = u.id 
             WHERE n.slug = ?
         `;
-        const [rows] = await db.query(sql, [req.params.slug]);
+        const [rows] = await db.query(sql, [slug]);
+
         if (rows.length === 0) return res.status(404).json({ message: 'Haber bulunamadı' });
+        
         res.json(rows[0]);
     } catch (err) {
         console.error("Haber Detay Hatası:", err);
@@ -100,24 +113,25 @@ exports.getNewsBySlug = async (req, res) => {
     }
 };
 
-// 5. Haber Ekle (category_id kullanarak)
+// 5. Haber Ekle (Yazar ID'sini Kaydederek)
 exports.addNews = async (req, res) => {
     try {
-        // Frontend'den artık 'category_id' gelmeli (Dropdown value=1,2,3 gibi)
-        // Eğer frontend hala isim gönderiyorsa (value="GÜNDEM"), burada önce ID'sini bulmalıyız.
-        // Şimdilik sistemin ID gönderdiğini varsayıyoruz (value="1").
         const { title, content, category_id, is_slider, is_breaking } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
         
+        // Giriş yapan kullanıcının ID'sini al (Auth middleware sayesinde req.user.id dolu gelir)
+        const authorId = req.user ? req.user.id : null; 
+
         const slug = title.toLowerCase()
             .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
             .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
             .replace(/[^a-z0-9-]/g, '-')
             .replace(/-+/g, '-');
 
-        // category DEĞİL category_id sütununa yazıyoruz
-        const sql = `INSERT INTO news (title, slug, content, category_id, image_path, is_slider, is_breaking) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        await db.query(sql, [title, slug, content, category_id, imagePath, is_slider === 'true', is_breaking === 'true']);
+        // author_id alanını da ekledik
+        const sql = `INSERT INTO news (title, slug, content, category_id, image_path, is_slider, is_breaking, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        
+        await db.query(sql, [title, slug, content, category_id, imagePath, is_slider === 'true', is_breaking === 'true', authorId]);
         
         res.json({ message: 'Haber eklendi' });
     } catch (err) {

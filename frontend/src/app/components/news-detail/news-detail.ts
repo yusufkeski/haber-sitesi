@@ -1,8 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // ChangeDetectorRef eklendi
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { NewsService } from '../../services/news';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser'; // Title eklendi
 
 @Component({
   selector: 'app-news-detail',
@@ -15,20 +15,23 @@ export class NewsDetailComponent implements OnInit {
   news: any = null;
   safeContent: SafeHtml = ''; 
   baseUrl = 'http://localhost:3000';
-  loading = true; // Başlangıçta yükleniyor
+  loading = true;
+  currentUrl: string = ''; // Paylaşım için link
 
   constructor(
     private route: ActivatedRoute,
     private newsService: NewsService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef // Dedektif iş başında
+    private cdr: ChangeDetectorRef,
+    private titleService: Title // SEO Başlığı için servis
   ) {}
 
   ngOnInit() {
+    // Şu anki sayfa linkini al
+    this.currentUrl = window.location.href;
+
     this.route.paramMap.subscribe(params => {
       const slug = params.get('slug');
-      console.log("🔗 URL'den gelen slug:", slug); // Konsolda bunu gör
-      
       if (slug) {
         this.loadNews(slug);
       } else {
@@ -43,22 +46,39 @@ export class NewsDetailComponent implements OnInit {
     
     this.newsService.getNewsBySlug(slug).subscribe({
       next: (data) => {
-        console.log("✅ Haber Sunucudan Geldi:", data);
         this.news = data;
         
-        // HTML İçeriğini temizle/güvenli yap
+        // HTML İçeriğini güvenli yap
         if (this.news.content) {
              this.safeContent = this.sanitizer.bypassSecurityTrustHtml(this.news.content);
         }
 
-        this.loading = false; // Yükleme bitti
-        this.cdr.detectChanges(); // ⚡ EKRANI ZORLA YENİLE
+        // Tarayıcı Sekme Başlığını Değiştir (SEO)
+        this.titleService.setTitle(`${this.news.title} - NERİK HABER`);
+
+        this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Haber Çekme Hatası:', err);
-        this.loading = false; // Hata olsa bile yüklemeyi bitir
-        this.cdr.detectChanges(); // ⚡ EKRANI ZORLA YENİLE
+        console.error('Haber Çekme Hatası:', err);
+        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  // --- YENİ EKLENEN FONKSİYONLAR ---
+
+  // Linki Kopyala
+  copyLink() {
+    navigator.clipboard.writeText(this.currentUrl).then(() => {
+      alert('Link kopyalandı! Arkadaşına gönderebilirsin.');
+    });
+  }
+
+  // WhatsApp Paylaş
+  shareWhatsapp() {
+    const text = encodeURIComponent(`${this.news.title}\nHaberi oku: ${this.currentUrl}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   }
 }

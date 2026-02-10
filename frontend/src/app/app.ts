@@ -10,8 +10,8 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterModule, FormsModule],
-  templateUrl: './app.html', // <-- DİKKAT: 'app.component.html' DEĞİL
-  styleUrls: ['./app.css']   // <-- DİKKAT: 'app.component.css' DEĞİL
+  templateUrl: './app.html', 
+  styleUrls: ['./app.css']
 })
 export class AppComponent implements OnInit {
   today: Date = new Date();
@@ -25,15 +25,19 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         const url = event.urlAfterRedirects;
+        // Admin veya Login sayfasındaysak Header/Footer gizlensin
         this.isAdminPage = url.includes('/admin');
         this.isLoginPage = url.includes('/login');
+        
+        // Sayfa değişince en üste kaydır
         window.scrollTo(0, 0);
       }
     });
 
     this.today = new Date();
-    // Hava durumu API
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=41.1436&longitude=35.4552&current_weather=true&t=${Date.now()}`;
+    
+    // Hava durumu API (Samsun Koordinatları)
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=41.2867&longitude=36.33&current_weather=true&t=${Date.now()}`;
     
     this.weather$ = this.http.get(weatherUrl).pipe(
       map((res: any) => {
