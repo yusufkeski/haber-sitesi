@@ -1,0 +1,53 @@
+<div class="container my-5">
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="bg-dark p-4 d-flex justify-content-between align-items-center">
+          <h2 class="text-white m-0 fw-bold">
+            <i class="fas fa-trophy text-warning me-3"></i>Samsun Süper Amatör A Grubu
+          </h2>
+          <span class="text-white-50 fw-bold">{{ seasonName }}</span>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 custom-full-table">
+              <thead class="table-light py-3">
+                <tr class="text-center text-uppercase small fw-bold">
+                  <th class="text-start ps-4">Sıra</th>
+                  <th class="text-start">Takım</th>
+                  <th>O</th>
+                  <th>G</th>
+                  <th>B</th>
+                  <th>M</th>
+                  <th>AG</th>
+                  <th>YG</th>
+                  <th>AV</th>
+                  <th class="bg-primary text-white">PUAN</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let team of standings; let i = index" 
+                    [ngClass]="{'vezirkopru-row': team.team_name.includes('Vezirköprü')}">
+                  <td class="text-start ps-4 fw-bold text-muted">{{ i + 1 }}.</td>
+                  <td class="text-start fw-bold">
+                    <img [src]="'http://localhost:3000' + team.logo_path" class="team-logo me-3" *ngIf="team.logo_path">
+                    {{ team.team_name }}
+                  </td>
+                  <td class="text-center">{{ team.played }}</td>
+                  <td class="text-center">{{ team.won }}</td>
+                  <td class="text-center">{{ team.drawn }}</td>
+                  <td class="text-center">{{ team.lost }}</td>
+                  <td class="text-center">{{ team.goals_for }}</td>
+                  <td class="text-center">{{ team.goals_against }}</td>
+                  <td class="text-center fw-bold">{{ team.goals_for - team.goals_against }}</td>
+                  <td class="text-center fw-bolder bg-primary-subtle">{{ team.points }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

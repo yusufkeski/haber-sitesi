@@ -108,3 +108,38 @@
 .search-box:hover .search-input, .search-box:focus-within .search-input {
     width: 200px; padding: 0 10px;
 }
+
+/* 1. BAŞLIK DÜZELTME: Siyah zemin üzerine beyaz yazı */
+.standings-header h6 {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Okunurluğu artırır */
+}
+
+/* 2. LOGO DÜZELTME: Uçup giden boyutları geri getirelim */
+.team-logo-mini {
+    width: 28px !important;
+    height: 28px !important;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* 3. VEZİRKÖPRÜ VURGUSU (EN ÖNEMLİ KISIM) */
+/* Bootstrap td'leri boyadığı için biz de doğrudan td'leri hedefliyoruz */
+.custom-standings-table tbody tr.vezirkopru-highlight td {
+    background-color: #dc3545 !important; /* Canlı Kırmızı */
+    color: #ffffff !important;           /* Kar beyazı yazı */
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Vezirköprü satırındaki sıra numarasını da beyaz yapalım */
+.vezirkopru-highlight .rank-number {
+    color: #ffffff !important;
+    opacity: 0.9;
+}
+
+/* Puan hücresini (P) vurguda biraz daha parlatabiliriz */
+.vezirkopru-highlight .points-cell {
+    font-weight: 900 !important;
+    background-color: rgba(0, 0, 0, 0.1) !important; /* Hafif gölge */
+}

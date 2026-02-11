@@ -1,0 +1,81 @@
+<div class="container-fluid mt-4">
+  <div class="row">
+    
+    <div class="col-md-5">
+      <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="m-0"><i class="fas fa-shield-alt me-2"></i> Yeni Takım Ekle</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Takım Adı</label>
+            <input type="text" class="form-control" [(ngModel)]="teamName" placeholder="Örn: Vezirköprüspor">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Takım Logosu</label>
+            <input type="file" class="form-control" (change)="fileChangeEvent($event)" accept="image/*" />
+          </div>
+
+          <div class="mb-3" *ngIf="imageChangedEvent">
+            <p class="text-muted small">Logoyu çerçeveye oturtun (1:1 Kare formatı önerilir)</p>
+            <image-cropper
+              [imageChangedEvent]="imageChangedEvent"
+              [maintainAspectRatio]="true"
+              [aspectRatio]="1 / 1"
+              format="png"
+              (imageCropped)="imageCropped($event)"
+              style="max-height: 300px;">
+            </image-cropper>
+          </div>
+
+          <div class="mb-3 text-center" *ngIf="croppedImage">
+            <label class="form-label fw-bold w-100 text-start">Logo Önizleme</label>
+            <img [src]="croppedImage" class="img-thumbnail rounded-circle shadow" style="width: 120px; height: 120px; object-fit: cover;" />
+          </div>
+
+          <button class="btn btn-success w-100 fw-bold" (click)="saveTeam()">
+            <i class="fas fa-save me-2"></i> Takımı Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="m-0"><i class="fas fa-list me-2"></i> Kayıtlı Takımlar Havuzu</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-3">Logo</th>
+                <th scope="col">Takım Adı</th>
+                <th scope="col" class="text-end pe-3">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let team of teams">
+                <td class="ps-3">
+                  <img *ngIf="team.logo_path" [src]="'http://localhost:3000' + team.logo_path" alt="{{team.name}}" class="rounded-circle border" style="width: 45px; height: 45px; object-fit: cover;">
+                  <span *ngIf="!team.logo_path" class="badge bg-secondary p-2">Logosuz</span>
+                </td>
+                <td class="fw-bold">{{ team.name }}</td>
+                <td class="text-end pe-3">
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteTeam(team.id)">
+                    <i class="fas fa-trash"></i> Sil
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="teams.length === 0">
+                <td colspan="3" class="text-center text-muted py-4">Henüz sisteme takım eklenmedi.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

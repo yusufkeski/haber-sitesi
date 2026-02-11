@@ -1,0 +1,31 @@
+.custom-full-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.team-logo {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+/* Vezirköprüspor Vurgusu */
+.vezirkopru-row td {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+}
+
+.vezirkopru-row .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+/* Hover Efekti */
+.table-hover tbody tr:hover:not(.vezirkopru-row) {
+    background-color: #f1f4f9;
+}
+
+/* Başlık font ayarı */
+.card-header h2 {
+    font-family: 'Poppins', sans-serif;
+}

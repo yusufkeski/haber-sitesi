@@ -21,6 +21,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/poll', require('./routes/poll.routes'));
+app.use('/api/teams', require('./routes/team.routes'));
+app.use('/api/standings', require('./routes/standings.routes'));
 
 // Resim klasörünü dışarı aç
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));

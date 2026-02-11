@@ -129,6 +129,50 @@
                 <span class="text-secondary small fw-bold">REKLAM ALANI</span>
             </div>
 
+            <div class="standings-container mb-4" *ngIf="standingsData.isVisible && standingsData.teams.length > 0">
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-dark py-3 d-flex align-items-center justify-content-between">
+        <h6 class="m-0 fw-bold text-white">
+            <i class="fas fa-list-ol me-2 text-warning"></i> PUAN DURUMU
+        </h6>
+        <span class="badge bg-danger small">Süper Amatör A</span>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0 custom-standings-table">
+        <thead class="table-light">
+          <tr class="text-center small">
+            <th class="text-start ps-3 py-2">TAKIM</th>
+            <th width="30">O</th>
+            <th width="30">AV</th>
+            <th width="35" class="bg-light fw-bold">P</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let team of standingsData.teams; let i = index" 
+              [ngClass]="{'vezirkopru-highlight': team.team_name.includes('Vezirköprü')}"
+              class="text-center align-middle">
+            
+            <td class="text-start ps-3 py-2 d-flex align-items-center">
+              <span class="rank-number me-2">{{ i + 1 }}.</span>
+              <img [src]="'http://localhost:3000' + team.logo_path" class="team-logo-mini me-2" *ngIf="team.logo_path">
+              <span class="team-name text-truncate">{{ team.team_name }}</span>
+            </td>
+            
+            <td>{{ team.played }}</td>
+            <td>{{ team.goals_for - team.goals_against }}</td>
+            <td class="fw-bold bg-light">{{ team.points }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white text-center py-2">
+        <a routerLink="/puan-durumu" class="text-decoration-none small fw-bold text-primary all-details-link">
+            Tüm Detaylar <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+    </div>
+  </div>
+</div>
+
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-primary text-white py-3 rounded-top-4">
                     <h6 class="fw-bold m-0"><i class="fas fa-poll me-2"></i> Sitemizi Nasıl Buldunuz?</h6>

@@ -13,6 +13,8 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { AuthService } from '../../../services/auth';
 import { NewsService } from '../../../services/news'; 
 import { DashboardService } from '../../../services/dashboard';
+import { TeamService } from '../../../services/team.service';
+import { StandingsService } from '../../../services/standings';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,16 +38,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // --- LİSTELER ---
   newsList: any[] = [];
-  
-  // Manşet ve Son Dakika için Ayrılmış Listeler
-  activeSliderNews: any[] = []; // Soldaki Liste (Yayında)
-  activeBreakingNews: any[] = []; // Soldaki Liste (Yayında)
-  candidateNews: any[] = [];      // Sağdaki Liste (Adaylar)
-
+  activeSliderNews: any[] = [];
+  activeBreakingNews: any[] = [];
+  candidateNews: any[] = [];
   videoList: any[] = [];
   adList: any[] = [];
   userList: any[] = [];
   columnPostList: any[] = [];
+  
+  // SPOR LİSTELERİ
+  teamList: any[] = [];
+  standingsList: any[] = [];
+  standingsVisible: boolean = true;
 
   // --- FORM DATALARI ---
   newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
@@ -53,6 +57,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   adData = { title: '', target_url: '', area: 'sidebar', image: null };
   userData = { username: '', password: '', full_name: '', role: 'author', image: null };
   postData = { title: '', content: '' }; 
+  teamData = { name: '' }; // Yeni Takım Formu
+
 
   // 1. PASTA GRAFİK (Editör Performansı)
   pieChartData: ChartConfiguration<'pie'>['data'] = {
@@ -93,7 +99,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     public sanitizer: DomSanitizer,
     private newsService: NewsService, 
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private teamService: TeamService, // Enjekte edildi
+    private standingsService: StandingsService // Enjekte edildi
   ) {}
 
   ngOnInit() {
@@ -157,7 +165,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!this.currentUser || !this.currentUser.permissions) return false;
     const p = this.currentUser.permissions;
     if (p.all === true) return true;
-    if (section === 'news' || section === 'slider' || section === 'breaking' || section === 'videos') return p.can_edit_news === true;
+    if (['news', 'slider', 'breaking', 'videos', 'teams', 'standings'].includes(section)) return p.can_edit_news === true;
     if (section === 'ads') return p.all === true; 
     if (section === 'columnists') return p.can_post_column === true;
     if (section === 'personnel') return p.all === true;
@@ -171,8 +179,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   switchTab(tabName: string) {
     this.activeTab = tabName;
     this.resetForm();
-    
-    // Hangi sekmeye geçildiyse onun verisini yükle
     if (tabName === 'overview') this.loadStats();
     else if (tabName === 'news') this.getNews();
     else if (tabName === 'slider') this.loadSliderEditor();
@@ -180,7 +186,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     else if (tabName === 'videos') this.getVideos();
     else if (tabName === 'ads') this.getAds();
     else if (tabName === 'personnel') this.getUsers();
-    else if (tabName === 'columnists') this.getColumnPosts(); 
+    else if (tabName === 'columnists') this.getColumnPosts();
+    else if (tabName === 'teams') this.getTeams(); // Takımlar
+    else if (tabName === 'standings') this.getStandings(); // Puan Durumu
   }
 
   // ==========================================
@@ -399,17 +407,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
   deleteAd(id: number) { this.http.delete(`${this.baseUrl}/api/ads/${id}`).subscribe(() => this.getAds()); }
 
-  // YARDIMCILAR
-  resetForm() {
-    this.showForm = false; 
-    this.isEditing = false; 
-    this.selectedFile = false;
-    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
-    this.userData = { username: '', password: '', full_name: '', role: 'author', image: null };
-    this.postData = { title: '', content: '' };
-    if(this.cropper) { this.cropper.destroy(); this.cropper = null; }
-    if(this.imageElement && this.imageElement.nativeElement) this.imageElement.nativeElement.src = '';
-  }
+ // ==========================================
+  // YARDIMCILAR & DİĞERLERİ (Mevcutlara Eklemeler)
+  // ==========================================
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -419,11 +419,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
       reader.onload = (e: any) => {
         this.imageElement.nativeElement.src = e.target.result;
         if (this.cropper) { this.cropper.destroy(); }
-        const ratio = (this.activeTab === 'personnel') ? 1 : (16 / 9);
+        // Takımlar ve Personel için 1:1, Haberler için 16:9 oran
+        const ratio = (this.activeTab === 'personnel' || this.activeTab === 'teams') ? 1 : (16 / 9);
         this.cropper = new Cropper(this.imageElement.nativeElement, { aspectRatio: ratio, viewMode: 1, autoCropArea: 1 } as any);
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  resetForm() {
+    this.showForm = false; 
+    this.isEditing = false; 
+    this.selectedFile = false;
+    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
+    this.userData = { username: '', password: '', full_name: '', role: 'author', image: null };
+    this.teamData = { name: '' }; // Takım formunu sıfırla
+    this.postData = { title: '', content: '' };
+    if(this.cropper) { this.cropper.destroy(); this.cropper = null; }
+    if(this.imageElement && this.imageElement.nativeElement) this.imageElement.nativeElement.src = '';
   }
 
   getLast7DaysLabels(): string[] {
@@ -437,4 +450,54 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     return dates;
   }
+
+  // ==========================================
+  // SPOR (TAKIM VE PUAN DURUMU) İŞLEMLERİ
+  // ==========================================
+
+  getTeams() {
+    this.teamService.getTeams().subscribe(res => { this.teamList = res; this.cdr.detectChanges(); });
+  }
+
+  saveTeam() {
+    if (!this.teamData.name) return alert("Takım adı giriniz!");
+    const formData = new FormData();
+    formData.append('name', this.teamData.name);
+    
+    if (this.cropper) {
+      this.cropper.getCroppedCanvas().toBlob((blob: any) => {
+        formData.append('logo', blob, 'logo.png');
+        this.teamService.addTeam(formData).subscribe(() => { alert("Takım eklendi!"); this.resetForm(); this.getTeams(); });
+      });
+    } else {
+      this.teamService.addTeam(formData).subscribe(() => { alert("Takım eklendi!"); this.resetForm(); this.getTeams(); });
+    }
+  }
+
+  deleteTeam(id: number) {
+    if(confirm('Takımı silerseniz puan durumu verileri de silinir. Emin misiniz?')) {
+      this.teamService.deleteTeam(id).subscribe(() => this.getTeams());
+    }
+  }
+
+  getStandings() {
+    this.standingsService.getStandings().subscribe((res: any) => {
+      this.standingsList = res.teams;
+      this.standingsVisible = res.isVisible;
+      this.cdr.detectChanges();
+    });
+  }
+
+  saveStandings() {
+    this.standingsService.updateStandings(this.standingsList).subscribe(() => {
+      alert("Puan durumu güncellendi!");
+      this.getStandings();
+    });
+  }
+
+  toggleStandings() {
+    this.standingsService.toggleVisibility(this.standingsVisible).subscribe();
+  }
+
+  
 }

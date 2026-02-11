@@ -1,0 +1,56 @@
+<div class="container-fluid mt-4">
+  
+  <div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="fw-bold mb-1"><i class="fas fa-trophy text-warning me-2"></i> Puan Durumu Yönetimi</h5>
+        <p class="text-muted small mb-0">Lig tablosunu ve anasayfa görünürlüğünü buradan yönetebilirsiniz.</p>
+      </div>
+      
+      <div class="form-check form-switch form-switch-lg fs-4">
+        <input class="form-check-input" type="checkbox" role="switch" id="visibilitySwitch" 
+               [(ngModel)]="isVisibleOnHome" (change)="toggleVisibility()">
+        <label class="form-check-label ms-2 fs-6 fw-bold" [ngClass]="isVisibleOnHome ? 'text-success' : 'text-danger'" for="visibilitySwitch">
+          {{ isVisibleOnHome ? 'Anasayfada Aktif' : 'Anasayfada Gizli' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+      <h6 class="m-0 fw-bold">Takım İstatistikleri (Güncel Sezon)</h6>
+      <button class="btn btn-success btn-sm fw-bold px-3" (click)="saveStandings()">
+        <i class="fas fa-save me-1"></i> Tümünü Kaydet
+      </button>
+    </div>
+    <div class="card-body p-0 table-responsive">
+      <table class="table table-hover table-bordered align-middle mb-0 text-center">
+        <thead class="table-light">
+          <tr>
+            <th class="text-start ps-3">Takım Adı</th>
+            <th width="80">O</th>
+            <th width="80">G</th>
+            <th width="80">B</th>
+            <th width="80">M</th>
+            <th width="80" class="text-success">A.G</th>
+            <th width="80" class="text-danger">Y.G</th>
+            <th width="100" class="bg-primary text-white">Puan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let team of teams">
+            <td class="text-start fw-bold ps-3">{{ team.team_name }}</td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.played"></td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.won"></td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.drawn"></td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.lost"></td>
+            <td><input type="number" class="form-control form-control-sm text-center text-success fw-bold" [(ngModel)]="team.goals_for"></td>
+            <td><input type="number" class="form-control form-control-sm text-center text-danger fw-bold" [(ngModel)]="team.goals_against"></td>
+            <td><input type="number" class="form-control form-control-sm text-center bg-primary text-white fw-bold" [(ngModel)]="team.points"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

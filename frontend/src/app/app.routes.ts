@@ -7,8 +7,13 @@ import { NewsDetailComponent } from './components/news-detail/news-detail';
 import { NewsListComponent } from './components/news-list/news-list';
 import { PrivacyComponent } from './components/privacy/privacy';
 import { CookiesComponent } from './components/cookies/cookies';
+import { TeamsComponent } from './admin/teams/teams';
+import { StandingsComponent } from './admin/standings/standings';
+import { LeagueTableComponent } from './components/league-table/league-table';
 
 export const routes: Routes = [
+
+    { path: 'puan-durumu', component: LeagueTableComponent },
     // 1. Site açılınca direkt Anasayfaya git
     { path: '', component: HomeComponent },
     
@@ -17,8 +22,11 @@ export const routes: Routes = [
 
     { path: 'haber/:slug', component: NewsDetailComponent },
 
+
     // 3. Dashboard sayfası için route 
     { path: 'admin', component: DashboardComponent },
+    { path: 'admin/teams', component: TeamsComponent },
+    { path: 'admin/standings', component: StandingsComponent },
 
     { path: 'admin', component: DashboardComponent, canActivate: [authGuard] },
 

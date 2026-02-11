@@ -8,6 +8,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ToastrService } from 'ngx-toastr';
 import { PollService } from '../../services/poll.service';
 import { VideoService } from '../../services/video.service';
+import { StandingsService } from '../../services/standings';
 
 @Component({
   selector: 'app-home',
@@ -18,6 +19,7 @@ import { VideoService } from '../../services/video.service';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   // Değişkenler
+  standingsData: any = { isVisible: false, teams: [] };
   today: Date = new Date();
   latestNews: any[] = [];
   sliderNews: any[] = [];
@@ -43,6 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private routerSubscription!: Subscription;
 
   constructor(
+    private standingsService: StandingsService,
     private newsService: NewsService,
     private http: HttpClient,
     private router: Router,
@@ -54,6 +57,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadAllData();
+    this.getStandings();
 
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -223,5 +227,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getSafeUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  getStandings() {
+    this.standingsService.getStandings().subscribe({
+      next: (data: any) => {
+        this.standingsData = data;
+      },
+      error: (err: any) => console.error('Puan durumu yüklenemedi', err)
+    });
   }
 }
