@@ -29,6 +29,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   headerAd: any = null;
   sidebarAds: any[] = [];
 
+  currentPage = 1;
+  totalNews = 0;
+  limit = 10;
+  totalPages = 0;
+
   // Anket Değişkenleri
   polls: any[] = [];
   hasVoted: boolean = false;
@@ -58,6 +63,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadAllData();
     this.getStandings();
+    this.loadNews();
+    this.loadSliderNews();
 
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -81,35 +88,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadAllData() {
     this.today = new Date();
-    this.getNews();
     this.getColumnPosts();
     this.getAds();
   }
 
-  getNews() {
-    this.newsService.getAllNews().subscribe({
-      next: (data: any) => {
-        const newsArray = data.news ? data.news : data;
-        
-        if (Array.isArray(newsArray)) {
-          this.latestNews = newsArray;
-          
-          // Slider Haberleri
-          this.sliderNews = newsArray.filter((n: any) => n.is_slider);
-          
-          // Slider geldiyse otomatik döndürmeyi başlat
-          if (this.sliderNews.length > 0) {
-            this.startAutoSlide();
-          }
-
-          // Son Dakika
-          const breaking = newsArray.filter((n: any) => n.is_breaking);
-          this.breakingNews = breaking.map((n: any) => n.title).join(' • ');
-        }
-      },
-      error: (err) => console.error("Haber çekme hatası:", err)
-    });
-  }
+  
 
   getColumnPosts() {
     this.newsService.getColumnPosts().subscribe(data => {
@@ -237,4 +220,47 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: (err: any) => console.error('Puan durumu yüklenemedi', err)
     });
   }
+
+  loadNews(page: number = 1) {
+    this.currentPage = page;
+
+    this.newsService.getAllNews(page).subscribe(res => {
+      this.latestNews = res.news;
+      this.totalNews = res.total;
+      this.totalPages = res.totalPages;  // 🔥 Artık backend'den geliyor
+
+      const breaking = this.latestNews.filter((n: any) => n.is_breaking);
+      this.breakingNews = breaking.map((n: any) => n.title).join(' • ');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  
+  loadSliderNews() {
+      this.newsService.getSliderNews().subscribe(data => {
+        this.sliderNews = data;
+        if (this.sliderNews.length) this.startAutoSlide();
+      });
+  }
+
+  get visiblePages(): number[] {
+  const pages: number[] = [];
+  const maxVisible = 5;
+
+  let start = Math.max(this.currentPage - 2, 1);
+  let end = Math.min(start + maxVisible - 1, this.totalPages);
+
+  if (end - start < maxVisible - 1) {
+    start = Math.max(end - maxVisible + 1, 1);
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+    
+  return pages;
+  }
+
+
 }

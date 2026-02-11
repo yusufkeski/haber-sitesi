@@ -1,80 +1,124 @@
 <div class="container py-5">
-    
-    <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-        <p class="mt-3 text-muted fw-bold">Haber yükleniyor...</p>
-    </div>
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem"></div>
+    <p class="mt-3 text-muted fw-bold">Haber yükleniyor...</p>
+  </div>
 
-    <div *ngIf="!loading && news" class="row justify-content-center fade-in">
-        <div class="col-lg-9">
-            
-            <div class="mb-4 d-flex justify-content-between align-items-center">
-                <a routerLink="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm hover-scale">
-                    <i class="fas fa-arrow-left me-2"></i> Anasayfaya Dön
-                </a>
-                
-                <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill shadow-sm">{{ news.category_name || 'Gündem' }}</span>
-            </div>
+  <div *ngIf="!loading && news" class="row justify-content-center fade-in">
+    <div class="col-lg-9">
+      <div class="mb-4 d-flex justify-content-between align-items-center">
+        <a
+          routerLink="/"
+          class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm hover-scale"
+        >
+          <i class="fas fa-arrow-left me-2"></i> Anasayfaya Dön
+        </a>
 
-            <h1 class="fw-bold text-dark mb-3 display-5 lh-sm">{{ news.title }}</h1>
+        <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill shadow-sm">{{
+          news.category_name || 'Gündem'
+        }}</span>
+      </div>
 
-            <div class="d-flex flex-wrap align-items-center gap-3 mb-4 text-muted border-bottom pb-3">
-                <span class="d-flex align-items-center small">
-                    <i class="far fa-calendar-alt me-2 text-primary"></i> 
-                    {{ news.created_at | date:'dd MMMM yyyy HH:mm' }}
-                </span>
-                <span class="d-flex align-items-center small">
-                    <i class="far fa-eye me-2 text-primary"></i> 
-                    {{ news.view_count }} Kez Okundu
-                </span>
-                <span class="d-flex align-items-center small ms-md-auto">
-                    <i class="fas fa-user-edit me-2 text-primary"></i>
-                    {{ news.author_name || 'Editör' }}
-                </span>
-            </div>
+      <h1 class="fw-bold text-dark mb-3 display-5 lh-sm">{{ news.title }}</h1>
 
-            <p class="lead fw-bold text-secondary mb-4 fs-4" style="line-height: 1.6;">{{ news.summary }}</p>
+      <div class="d-flex flex-wrap align-items-center gap-3 mb-4 text-muted border-bottom pb-3">
+        <span class="d-flex align-items-center small">
+          <i class="far fa-calendar-alt me-2 text-primary"></i>
+          {{ news.created_at | date: 'dd MMMM yyyy HH:mm' }}
+        </span>
+        <span class="d-flex align-items-center small">
+          <i class="far fa-eye me-2 text-primary"></i>
+          {{ news.view_count }} Kez Okundu
+        </span>
+        <span class="d-flex align-items-center small ms-md-auto">
+          <i class="fas fa-user-edit me-2 text-primary"></i>
+          {{ news.author_name || 'Editör' }}
+        </span>
+      </div>
 
-            <div class="mb-5 rounded-4 overflow-hidden shadow position-relative">
-                <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 object-fit-cover" style="max-height: 500px;" alt="{{ news.title }}">
-            </div>
+      <p class="lead fw-bold text-secondary mb-4 fs-4" style="line-height: 1.6">
+        {{ news.summary }}
+      </p>
 
-            <div class="news-content fs-5 text-dark lh-lg mb-5" [innerHTML]="safeContent"></div>
+      <div class="mb-5 rounded-4 overflow-hidden shadow position-relative">
+        <img
+          *ngIf="news.image_path"
+          [src]="baseUrl + news.image_path"
+          class="w-100 object-fit-cover"
+          style="max-height: 500px"
+          alt="{{ news.title }}"
+        />
+      </div>
 
-            <div class="bg-light p-4 rounded-4 border d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 shadow-sm mb-5">
-                <div>
-                    <h6 class="fw-bold text-dark m-0">Bu haberi beğendin mi?</h6>
-                    <small class="text-muted">Arkadaşlarınla paylaşarak bize destek ol.</small>
-                </div>
-                
-                <div class="d-flex gap-2 w-100 w-md-auto">
-                    <button (click)="shareWhatsapp()" class="btn btn-success flex-grow-1 fw-bold text-white shadow-sm hover-scale">
-                        <i class="fab fa-whatsapp fa-lg me-2"></i> WhatsApp
-                    </button>
+      <div class="news-content fs-5 text-dark lh-lg mb-5" [innerHTML]="safeContent"></div>
 
-                    <button (click)="copyLink()" class="btn btn-dark flex-grow-1 fw-bold shadow-sm hover-scale">
-                        <i class="fas fa-link me-2"></i> Linki Kopyala
-                    </button>
-                </div>
-            </div>
-
-            <div class="p-4 bg-white rounded-4 border shadow-sm d-flex align-items-center gap-3">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-3 fw-bold shadow-sm" style="width: 60px; height: 60px;">
-                    {{ news.author_name?.charAt(0) || 'N' }}
-                </div>
-                <div>
-                    <span class="d-block small text-muted text-uppercase fw-bold ls-1">Haber Editörü</span>
-                    <h5 class="fw-bold text-dark m-0">{{ news.author_name || 'Nerik Haber Editörü' }}</h5>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div *ngIf="!loading && !news" class="text-center py-5">
-        <i class="fas fa-exclamation-circle fa-4x text-muted mb-3 opacity-25"></i>
-        <h3 class="fw-bold text-secondary">Haber Bulunamadı</h3>
-        <p class="text-muted">Aradığınız haber yayından kaldırılmış veya taşınmış olabilir.</p>
-        <a routerLink="/" class="btn btn-primary mt-3 px-4 rounded-pill">Anasayfaya Dön</a>
-    </div>
+      <div class="news-gallery" *ngIf="news.gallery?.length">
+  <h3>Olay Yerinden Görüntüler</h3>
+  <div class="gallery-grid">
+  <img
+    *ngFor="let item of news.gallery"
+    [src]="baseUrl + item.media_path"
+    (click)="openImage(baseUrl + item.media_path)"
+  />
 </div>
+
+</div>
+
+
+      <div
+        class="bg-light p-4 rounded-4 border d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 shadow-sm mb-5"
+      >
+
+
+        <div>
+          <h6 class="fw-bold text-dark m-0">Bu haberi beğendin mi?</h6>
+          <small class="text-muted">Arkadaşlarınla paylaşarak bize destek ol.</small>
+        </div>
+
+        <div class="d-flex gap-2 w-100 w-md-auto">
+          <button
+            (click)="shareWhatsapp()"
+            class="btn btn-success flex-grow-1 fw-bold text-white shadow-sm hover-scale"
+          >
+            <i class="fab fa-whatsapp fa-lg me-2"></i> WhatsApp
+          </button>
+
+          <button
+            (click)="copyLink()"
+            class="btn btn-dark flex-grow-1 fw-bold shadow-sm hover-scale"
+          >
+            <i class="fas fa-link me-2"></i> Linki Kopyala
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4 bg-white rounded-4 border shadow-sm d-flex align-items-center gap-3">
+        <div
+          class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-3 fw-bold shadow-sm"
+          style="width: 60px; height: 60px"
+        >
+          {{ news.author_name?.charAt(0) || 'N' }}
+        </div>
+        <div>
+          <span class="d-block small text-muted text-uppercase fw-bold ls-1">Haber Editörü</span>
+          <h5 class="fw-bold text-dark m-0">{{ news.author_name || 'Nerik Haber Editörü' }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !news" class="text-center py-5">
+    <i class="fas fa-exclamation-circle fa-4x text-muted mb-3 opacity-25"></i>
+    <h3 class="fw-bold text-secondary">Haber Bulunamadı</h3>
+    <p class="text-muted">Aradığınız haber yayından kaldırılmış veya taşınmış olabilir.</p>
+    <a routerLink="/" class="btn btn-primary mt-3 px-4 rounded-pill">Anasayfaya Dön</a>
+  </div>
+</div>
+
+<div class="lightbox" *ngIf="selectedImage">
+  <span class="close" (click)="closeImage()">×</span>
+  <img [src]="selectedImage" class="lightbox-img" />
+  <button class="nav prev" (click)="prevImage()">❮</button>
+  <button class="nav next" (click)="nextImage()">❯</button>
+</div>
+

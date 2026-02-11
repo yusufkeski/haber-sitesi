@@ -1,0 +1,119 @@
+:host ::ng-deep .news-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 15px 0;
+}
+
+:host ::ng-deep .news-content iframe {
+  max-width: 100%;
+}
+
+:host ::ng-deep .news-content table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+:host ::ng-deep .news-content {
+  line-height: 1.8;
+  word-wrap: break-word;
+}
+
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.gallery-grid img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.news-content {
+  line-height: 1.8;
+  font-size: 1.1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.news-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 15px 0;
+}
+
+.news-content iframe {
+  max-width: 100%;
+}
+
+.news-content table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.news-content p {
+  margin-bottom: 1rem;
+}
+
+.news-gallery {
+  margin-bottom: 40px; /* paylaşım kutusundan ayırır */
+}
+
+.news-gallery h3 {
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.gallery-grid img {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.gallery-grid img:hover {
+  transform: scale(1.05);
+}
+
+/* LIGHTBOX */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.lightbox-img {
+  max-width: 90%;
+  max-height: 85%;
+  border-radius: 10px;
+}
+
+.close {
+  position: absolute;
+  top: 25px;
+  right: 40px;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 40px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 20px;
+}
+
+.prev { left: 20px; }
+.next { right: 20px; }

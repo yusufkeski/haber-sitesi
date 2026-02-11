@@ -29,12 +29,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isEditing: boolean = false;
   currentId: number | null = null;
   currentUser: any = null;
-  selectedFile: boolean = false;
+  selectedFile: File | null = null;
   stats: any = null;
   
   baseUrl = 'http://localhost:3000'; 
   @ViewChild('imageElement') imageElement!: ElementRef;
   cropper: any; 
+
+  galleryFiles: File[] = [];
+  galleryPreview: string[] = [];
 
   // --- LİSTELER ---
   newsList: any[] = [];
@@ -52,7 +55,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   standingsVisible: boolean = true;
 
   // --- FORM DATALARI ---
-  newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
+  newsData: any = {
+  title: '',
+  category_id: 1,
+  content: '',
+  image: null,
+  is_slider: false,
+  is_breaking: false
+  };
+
   videoData = { title: '', url: '' };
   adData = { title: '', target_url: '', area: 'sidebar', image: null };
   userData = { username: '', password: '', full_name: '', role: 'author', image: null };
@@ -250,26 +261,74 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  saveNews() {
-     if (!this.newsData.title) { alert("Başlık giriniz!"); return; }
-     if (!this.isEditing && !this.cropper) { alert("Resim seçiniz!"); return; }
+saveNews() {
+  const formData = new FormData();
 
-     const formData = new FormData();
-     formData.append('title', this.newsData.title);
-     formData.append('content', this.newsData.content);
-     formData.append('category', this.newsData.category);
-     const token = localStorage.getItem('token');
-     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  formData.append('title', this.newsData.title);
+  formData.append('content', this.newsData.content);
+  formData.append('category_id', String(this.newsData.category_id));
+  formData.append('is_slider', this.newsData.is_slider ? '1' : '0');
+  formData.append('is_breaking', this.newsData.is_breaking ? '1' : '0');
 
-     if (this.cropper) {
-        this.cropper.getCroppedCanvas().toBlob((blob: any) => {
-            if (blob) {
-                formData.append('image', blob, 'news-image.jpg');
-                this.sendRequest(formData, headers, 'news');
-            }
-        }, 'image/jpeg', 0.8);
-     } else { this.sendRequest(formData, headers, 'news'); }
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+  if (this.cropper) {
+    this.cropper.getCroppedCanvas().toBlob((blob: any) => {
+      if (blob) formData.append('image', blob, 'news.jpg');
+
+      this.http.post<any>('http://localhost:3000/api/news', formData, { headers })
+        .subscribe(res => {
+          const newsId = res.insertId; // 🔥 önemli
+
+          // GALERİ VARSA 2. İSTEĞİ AT
+          if (this.galleryFiles.length > 0) {
+            const galleryData = new FormData();
+            this.galleryFiles.forEach(f => galleryData.append('media', f));
+
+            this.http.post(`http://localhost:3000/api/news/${newsId}/media`, galleryData, { headers })
+              .subscribe(() => {
+                alert("Haber ve galeri eklendi");
+                this.resetForm();
+                this.getNews();
+              });
+          } else {
+            alert("Haber eklendi");
+            this.resetForm();
+            this.getNews();
+          }
+        });
+    });
   }
+}
+
+appendGalleryAndSend(formData: FormData) {
+  this.galleryFiles.forEach(file => {
+    formData.append('media', file);
+  });
+
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+  this.http.post('http://localhost:3000/api/news', formData, { headers })
+    .subscribe({
+      next: (res) => {
+        console.log("Haber eklendi", res);
+        this.resetForm();
+        this.getNews();
+      },
+      error: (err) => {
+        console.error("HABER EKLEME HATASI", err);
+        alert("Yetki hatası veya sunucu hatası var.");
+      }
+    });
+}
+
+
+
+
+
+
 
   // Ortak İstek Gönderici (Haberler için)
   sendRequest(formData: FormData, headers: HttpHeaders, type: 'news') {
@@ -290,7 +349,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isEditing = true;
     this.currentId = item.id;
     this.showForm = true;
-    this.newsData = { title: item.title, category: item.category_name || item.category, content: item.content, image: null };
+    this.newsData = { 
+      title: item.title, 
+      category_id: item.category_id, 
+      content: item.content, 
+      image: null 
+    };
     if (item.image_path) {
         setTimeout(() => { if(this.imageElement) this.imageElement.nativeElement.src = this.baseUrl + item.image_path; }, 100);
     }
@@ -414,7 +478,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.selectedFile = true;
+      this.selectedFile = file; 
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imageElement.nativeElement.src = e.target.result;
@@ -428,10 +492,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   resetForm() {
+    this.galleryFiles = [];
     this.showForm = false; 
     this.isEditing = false; 
-    this.selectedFile = false;
-    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
+    this.selectedFile = null;
+    this.newsData = { title: '', category_id: 1, content: '', image: null };
     this.userData = { username: '', password: '', full_name: '', role: 'author', image: null };
     this.teamData = { name: '' }; // Takım formunu sıfırla
     this.postData = { title: '', content: '' };
@@ -498,6 +563,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   toggleStandings() {
     this.standingsService.toggleVisibility(this.standingsVisible).subscribe();
   }
+
+  onGallerySelect(event: any) {
+  this.galleryFiles = Array.from(event.target.files);
+  this.galleryPreview = [];
+
+  this.galleryFiles.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => this.galleryPreview.push(e.target?.result as string);
+    reader.readAsDataURL(file);
+  });
+}
 
   
 }

@@ -6,53 +6,44 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// --- RESİM YÜKLEME AYARI ---
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const dir = 'public/uploads/';
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); 
-    }
+  destination: (req, file, cb) => {
+    const dir = 'public/uploads/';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
 });
-const upload = multer({ storage: storage });
 
-// ======================================================
-// 1. ÖZEL GET ROTALARI (En Üste!)
-// ======================================================
+
+
+const upload = multer({ storage });
+
+/* ================= PUBLIC ================= */
 router.get('/search', newsController.searchNews);
 router.get('/category/:category', newsController.getNewsByCategory);
+router.get('/slider', newsController.getSliderNews);
+router.get('/', newsController.getAllNews);
+router.get('/:slug', newsController.getNewsBySlug);
 
-// ======================================================
-// 2. ADMİN İŞLEMLERİ (ID Gerektirenler - Ortaya!)
-// ======================================================
-// Bu satırlar 'checkAuth' ile korunur
+/* ================= ADMIN ================= */
 
-// Manşet / Son Dakika Yap (Status Toggle)
-router.put('/:id/status', checkAuth, newsController.toggleNewsStatus);
-
-// Haber Sil
-router.delete('/:id', checkAuth, newsController.deleteNews);
-
-// Haber Güncelle
-router.put('/:id', checkAuth, upload.single('image'), newsController.updateNews);
-
-// Haber Ekle (ID yok ama POST işlemi)
+// HABER EKLE (Kapak resmi)
 router.post('/', checkAuth, upload.single('image'), newsController.addNews);
 
+// HABER GÜNCELLE
+router.put('/:id', checkAuth, upload.single('image'), newsController.updateNews);
 
-// ======================================================
-// 3. GENEL LİSTELEME (En Alta Yakın)
-// ======================================================
-router.get('/', newsController.getAllNews);
+// HABER SİL
+router.delete('/:id', checkAuth, newsController.deleteNews);
 
+// SLIDER / BREAKING
+router.put('/:id/status', checkAuth, newsController.toggleNewsStatus);
 
-// ======================================================
-// 4. TEK HABER OKUMA (En Sona!)
-// ======================================================
-// DİKKAT: Bunu yukarı taşırsan Admin paneli bozulur!
-router.get('/:slug', newsController.getNewsBySlug);
+// 🔥 GALERİ MEDYASI EKLE
+router.post('/:id/media', checkAuth, upload.array('media', 10), newsController.addNewsMedia);
+
 
 module.exports = router;

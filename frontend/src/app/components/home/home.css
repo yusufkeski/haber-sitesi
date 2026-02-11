@@ -143,3 +143,13 @@
     font-weight: 900 !important;
     background-color: rgba(0, 0, 0, 0.1) !important; /* Hafif gölge */
 }
+
+.pagination .page-link {
+    margin-left: 15px;
+  border-radius: 50px;
+}
+
+.pagination .active .page-link {
+  background: linear-gradient(45deg, #0d6efd, #4dabf7);
+  border: none;
+}

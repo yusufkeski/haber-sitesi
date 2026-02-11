@@ -17,6 +17,7 @@ export class NewsDetailComponent implements OnInit {
   baseUrl = 'http://localhost:3000';
   loading = true;
   currentUrl: string = '';
+  selectedImage: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -104,4 +105,24 @@ export class NewsDetailComponent implements OnInit {
     const text = encodeURIComponent(`${this.news.title}\nHaberi oku: ${this.currentUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   }
+
+  openImage(img: string) {
+  this.selectedImage = img;
+}
+
+closeImage() {
+  this.selectedImage = null;
+}
+
+nextImage() {
+  const i = this.news.gallery.findIndex((g: any) => this.baseUrl + g.media_path === this.selectedImage);
+  const next = (i + 1) % this.news.gallery.length;
+  this.selectedImage = this.baseUrl + this.news.gallery[next].media_path;
+}
+
+prevImage() {
+  const i = this.news.gallery.findIndex((g: any) => this.baseUrl + g.media_path === this.selectedImage);
+  const prev = (i - 1 + this.news.gallery.length) % this.news.gallery.length;
+  this.selectedImage = this.baseUrl + this.news.gallery[prev].media_path;
+}
 }

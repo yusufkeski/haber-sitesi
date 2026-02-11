@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `ads` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.ads: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.ads: 2 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `ads` DISABLE KEYS */;
 INSERT INTO `ads` (`id`, `title`, `image_path`, `target_url`, `area`, `is_active`, `created_at`) VALUES
 	(1, 'adcac', '/uploads/1770585228366.jpeg', 'asvadcav', 'sidebar', 1, '2026-02-08 21:13:48'),
@@ -59,14 +59,15 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#2563eb',
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.categories: 3 rows tablosu için veriler indiriliyor
+-- nerik_db.categories: 4 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
 INSERT INTO `categories` (`id`, `name`, `slug`, `color`) VALUES
 	(1, 'Gündem', 'gundem', '#2563eb'),
 	(2, 'Spor', 'spor', '#2563eb'),
-	(3, 'Ekonomi', 'ekonomi', '#2563eb');
+	(3, 'Ekonomi', 'ekonomi', '#2563eb'),
+	(5, 'TEKNOLOJİ', '', '#2563eb');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.column_posts
@@ -79,12 +80,12 @@ CREATE TABLE IF NOT EXISTS `column_posts` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.column_posts: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.column_posts: 1 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `column_posts` DISABLE KEYS */;
 INSERT INTO `column_posts` (`id`, `user_id`, `title`, `content`, `view_count`, `created_at`) VALUES
-	(3, 2, 'Emreye GÖTTEN Basmışlar', '<p>Geçen gün Emreyi bir siktim dağlar taşlar dile geldi.</p>', 0, '2026-02-08 21:55:32');
+	(4, 2, 'köşe yazısı 1', '<ul><li>avsdvsfvdxfvscasdvsdvs<u>df&nbsp;df&nbsp;sf</u><em><u>sfvesvds</u></em><strong><em><u>svsvsdvsdvdsvsdcsdv&nbsp;sdvsdvsdvsvsdvsvsdvsdvsdv</u></em></strong><sub><strong><em><u>svsvsdvsdsdv</u></em></strong></sub><sup><strong><em><u>vsdvsdvsd</u></em></strong></sup><strong><em><u>svsvsdvsdvd</u></em></strong><strong class="ql-size-huge"><em><u>vdsvsdvs</u></em></strong><strong class="ql-size-small"><em><u>dsvsdvs</u></em></strong><strong><em><u>vsdvsvd</u></em></strong><strong style="background-color: rgb(230, 0, 0);"><em><u>vsdvsdvsdv</u></em></strong><strong style="background-color: rgb(0, 0, 0);"><em><u>sdvsdv</u></em></strong><strong><em><u>sdvsdvsdvsd</u></em></strong><strong style="color: rgb(68, 68, 68);"><em><u>sdvsdvsdv</u></em></strong><strong style="color: rgb(230, 0, 0);"><em><u>sdvsdvsdsdvs</u></em></strong><strong style="color: rgb(230, 0, 0);" class="ql-font-serif"><em><u>vsdvsdvsd</u></em></strong><strong style="color: rgb(230, 0, 0);" class="ql-font-monospace"><em><u>vsdvsdvsdvsdvs</u></em></strong></li></ul>', 0, '2026-02-09 19:44:21');
 /*!40000 ALTER TABLE `column_posts` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.news
@@ -109,13 +110,53 @@ CREATE TABLE IF NOT EXISTS `news` (
   KEY `author_id` (`author_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.news: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.news: 3 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `news` DISABLE KEYS */;
 INSERT INTO `news` (`id`, `title`, `slug`, `summary`, `content`, `image_path`, `category_id`, `author_id`, `status`, `view_count`, `is_breaking`, `is_slider`, `created_at`, `updated_at`) VALUES
-	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 7, 0, 0, '2026-02-08 18:07:34', '2026-02-08 22:53:20'),
-	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler-1770590892780', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p><p></p><p>https://www.youtube.com/watch?v=yr7mYngK1Xc&amp;pp=ygUWa8O8cnQgdHJhdmVzdGkgxZ9hcmvEsdIHCQmRCgGHKiGM7w%3D%3D</p>', '/uploads/1770578141018.jpg', 3, 2, 'published', 9, 0, 0, '2026-02-08 19:15:41', '2026-02-08 22:52:59'),
-	(4, 'Bakire Anteplinin Hazin Sonu ...', 'bakire-anteplinin-hazin-sonu-1770590909931', NULL, '<p>Antepli bakire genç <strong><u>Erdal Muhittin Sikikalkan,</u></strong> Sultan Taş adlı şahıs tarafından sikilerek öldürüldü. </p>', '/uploads/1770590676323.jpg', 2, 3, 'published', 2, 1, 1, '2026-02-08 22:44:36', '2026-02-08 22:53:48');
+	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 12, 1, 1, '2026-02-08 18:07:34', '2026-02-10 23:04:55'),
+	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler-1770590892780', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p><p></p><p>https://www.youtube.com/watch?v=yr7mYngK1Xc&amp;pp=ygUWa8O8cnQgdHJhdmVzdGkgxZ9hcmvEsdIHCQmRCgGHKiGM7w%3D%3D</p>', '/uploads/1770578141018.jpg', 3, 2, 'published', 14, 1, 1, '2026-02-08 19:15:41', '2026-02-10 23:04:54'),
+	(4, 'Bakire Anteplinin Hazin Sonu ...', 'bakire-anteplinin-hazin-sonu-1770590909931', NULL, '<p>Antepli bakire genç <strong><u>Erdal Muhittin Sikikalkan,</u></strong> Sultan Taş adlı şahıs tarafından sikilerek öldürüldü. </p>', '/uploads/1770590676323.jpg', 2, 3, 'published', 10, 1, 1, '2026-02-08 22:44:36', '2026-02-11 00:44:19');
 /*!40000 ALTER TABLE `news` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.poll_options
+CREATE TABLE IF NOT EXISTS `poll_options` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `option_text` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `vote_count` int DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.poll_options: ~5 rows (yaklaşık) tablosu için veriler indiriliyor
+INSERT INTO `poll_options` (`id`, `option_text`, `vote_count`) VALUES
+	(1, 'Çok İyi', 1),
+	(2, 'İyi', 0),
+	(3, 'Orta', 0),
+	(4, 'Kötü', 0),
+	(5, 'Çok Kötü', 0);
+
+-- tablo yapısı dökülüyor nerik_db.poll_votes
+CREATE TABLE IF NOT EXISTS `poll_votes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `voted_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.poll_votes: ~0 rows (yaklaşık) tablosu için veriler indiriliyor
+INSERT INTO `poll_votes` (`id`, `ip_address`, `voted_at`) VALUES
+	(1, '::1', '2026-02-11 00:37:03');
+
+-- tablo yapısı dökülüyor nerik_db.seasons
+CREATE TABLE IF NOT EXISTS `seasons` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `season_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.seasons: ~0 rows (yaklaşık) tablosu için veriler indiriliyor
+INSERT INTO `seasons` (`id`, `season_name`, `is_active`) VALUES
+	(1, '2025-2026 Sezonu', 1);
 
 -- tablo yapısı dökülüyor nerik_db.settings
 CREATE TABLE IF NOT EXISTS `settings` (
@@ -127,6 +168,58 @@ CREATE TABLE IF NOT EXISTS `settings` (
 -- nerik_db.settings: 0 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
+
+-- tablo yapısı dökülüyor nerik_db.site_settings
+CREATE TABLE IF NOT EXISTS `site_settings` (
+  `setting_key` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `setting_value` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.site_settings: ~1 rows (yaklaşık) tablosu için veriler indiriliyor
+INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
+	('show_standings', '1');
+
+-- tablo yapısı dökülüyor nerik_db.standings
+CREATE TABLE IF NOT EXISTS `standings` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `season_id` int NOT NULL,
+  `team_id` int NOT NULL,
+  `played` int DEFAULT '0',
+  `won` int DEFAULT '0',
+  `drawn` int DEFAULT '0',
+  `lost` int DEFAULT '0',
+  `goals_for` int DEFAULT '0',
+  `goals_against` int DEFAULT '0',
+  `points` int DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `season_id` (`season_id`),
+  KEY `team_id` (`team_id`),
+  CONSTRAINT `standings_ibfk_1` FOREIGN KEY (`season_id`) REFERENCES `seasons` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `standings_ibfk_2` FOREIGN KEY (`team_id`) REFERENCES `teams` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.standings: ~0 rows (yaklaşık) tablosu için veriler indiriliyor
+INSERT INTO `standings` (`id`, `season_id`, `team_id`, `played`, `won`, `drawn`, `lost`, `goals_for`, `goals_against`, `points`) VALUES
+	(1, 1, 1, 12, 7, 2, 3, 24, 15, 23),
+	(2, 1, 2, 12, 10, 1, 1, 31, 10, 31),
+	(3, 1, 3, 12, 8, 4, 0, 24, 6, 28),
+	(4, 1, 4, 12, 7, 0, 5, 16, 27, 21);
+
+-- tablo yapısı dökülüyor nerik_db.teams
+CREATE TABLE IF NOT EXISTS `teams` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `logo_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- nerik_db.teams: ~0 rows (yaklaşık) tablosu için veriler indiriliyor
+INSERT INTO `teams` (`id`, `name`, `logo_path`) VALUES
+	(1, 'Vezirköprü Belediyespor', '/uploads/logo_1770775519783.png'),
+	(2, 'Atakum Belediyespor', '/uploads/logo_1770775610726.png'),
+	(3, '1930 Bafraspor', '/uploads/logo_1770775649876.png'),
+	(4, 'Ladik Belediyespor', '/uploads/logo_1770775685132.png');
 
 -- tablo yapısı dökülüyor nerik_db.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -157,13 +250,13 @@ CREATE TABLE IF NOT EXISTS `videos` (
   `url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.videos: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.videos: 1 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `videos` DISABLE KEYS */;
 INSERT INTO `videos` (`id`, `title`, `url`, `created_at`) VALUES
-	(1, 'asdasf', 'https://www.youtube.com/embed/aWMdUqyk3Ys&list=RDaWMdUqyk3Ys&start_radio=1', '2026-02-08 20:27:34'),
-	(2, 'asdasd', 'https://www.youtube.com/embed/yr7mYngK1Xc', '2026-02-08 20:28:06');
+	(2, 'asdasd', 'https://www.youtube.com/embed/yr7mYngK1Xc', '2026-02-08 20:28:06'),
+	(3, 'Ben bir aytendir tutturmuşum', 'https://www.youtube.com/embed/Tln3bjppjtA&list=RDTln3bjppjtA&start_radio=1', '2026-02-11 00:33:05');
 /*!40000 ALTER TABLE `videos` ENABLE KEYS */;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
@@ -489,6 +582,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/poll', require('./routes/poll.routes'));
+app.use('/api/teams', require('./routes/team.routes'));
+app.use('/api/standings', require('./routes/standings.routes'));
 
 // Resim klasörünü dışarı aç
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -1001,6 +1097,166 @@ exports.toggleNewsStatus = async (req, res) => {
         res.json({ message: 'Durum güncellendi' });
     } catch (err) {
         console.error("Toggle Hatası:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+============================================================
+DOSYA YOLU: backend\controllers\poll.controller.js
+============================================================
+const db = require('../db');
+
+exports.getPolls = async (req, res) => {
+    try {
+        // Promise yapısına uygun olarak await kullanıyoruz (callback yok)
+        const [results] = await db.query('SELECT * FROM poll_options ORDER BY id ASC');
+        res.json(results);
+    } catch (err) {
+        console.error("Anketleri çekerken hata:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.votePoll = async (req, res) => {
+    const { optionId } = req.body;
+    const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    try {
+        // 1. Bu IP daha önce oy kullanmış mı?
+        const [results] = await db.query('SELECT id FROM poll_votes WHERE ip_address = ?', [ipAddress]);
+
+        if (results.length > 0) {
+            return res.status(403).json({ message: 'Daha önce oy kullandınız. İlginiz için teşekkürler!' });
+        }
+
+        // 2. Kullanmamışsa IP'yi kaydet
+        await db.query('INSERT INTO poll_votes (ip_address) VALUES (?)', [ipAddress]);
+        
+        // 3. İlgili şıkkın oy sayısını 1 artır
+        await db.query('UPDATE poll_options SET vote_count = vote_count + 1 WHERE id = ?', [optionId]);
+        
+        res.json({ message: 'Oyunuz başarıyla kaydedildi!' });
+    } catch (err) {
+        console.error("Oy kullanırken hata:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+============================================================
+DOSYA YOLU: backend\controllers\standings.controller.js
+============================================================
+const db = require('../db');
+
+// Puan Durumunu Getir (ve yeni takımları otomatik senkronize et)
+exports.getStandings = async (req, res) => {
+    try {
+        // 1. Anasayfada göster/gizle ayarını çek
+        const [settings] = await db.query('SELECT setting_value FROM site_settings WHERE setting_key = "show_standings"');
+        const isVisible = settings.length > 0 ? settings[0].setting_value === '1' : false;
+
+        // 2. Aktif sezonu bul
+        const [seasons] = await db.query('SELECT id FROM seasons WHERE is_active = 1 LIMIT 1');
+        if (seasons.length === 0) {
+            return res.json({ isVisible, teams: [], message: 'Aktif sezon bulunamadı.' });
+        }
+        const activeSeasonId = seasons[0].id;
+
+        // 3. OTO-SENKRONİZASYON: Takımlar tablosundaki takımları puan tablosuna 0 puanla ekle
+        const [allTeams] = await db.query('SELECT id FROM teams');
+        const [existingStandings] = await db.query('SELECT team_id FROM standings WHERE season_id = ?', [activeSeasonId]);
+        const existingTeamIds = existingStandings.map(s => s.team_id);
+
+        for (let team of allTeams) {
+            // Eğer takım bu sezonun puan tablosunda yoksa, 0 puanla dahil et
+            if (!existingTeamIds.includes(team.id)) {
+                await db.query('INSERT INTO standings (season_id, team_id) VALUES (?, ?)', [activeSeasonId, team.id]);
+            }
+        }
+
+        // 4. Tabloyu takımların logoları ve adlarıyla birlikte çekip sırala (Önce puana, sonra averaja göre)
+        const [standings] = await db.query(`
+            SELECT s.*, t.name as team_name, t.logo_path 
+            FROM standings s
+            JOIN teams t ON s.team_id = t.id
+            WHERE s.season_id = ?
+            ORDER BY s.points DESC, (s.goals_for - s.goals_against) DESC, s.won DESC
+        `, [activeSeasonId]);
+
+        res.json({ isVisible, teams: standings });
+    } catch (err) {
+        console.error("Puan durumu çekilirken hata:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Görünürlüğü Aç/Kapa
+exports.toggleVisibility = async (req, res) => {
+    const { isVisible } = req.body;
+    const val = isVisible ? '1' : '0';
+    try {
+        await db.query('UPDATE site_settings SET setting_value = ? WHERE setting_key = "show_standings"', [val]);
+        res.json({ message: 'Puan durumu görünürlüğü güncellendi!' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Excel gibi girilen puanları kaydet
+exports.updateTeamStats = async (req, res) => {
+    const teams = req.body; 
+    try {
+        for (let team of teams) {
+            await db.query(
+                'UPDATE standings SET played=?, won=?, drawn=?, lost=?, goals_for=?, goals_against=?, points=? WHERE id=?',
+                [team.played, team.won, team.drawn, team.lost, team.goals_for, team.goals_against, team.points, team.id]
+            );
+        }
+        res.json({ message: 'Puan durumu başarıyla güncellendi!' });
+    } catch (err) {
+        console.error("Puan güncellenirken hata:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+============================================================
+DOSYA YOLU: backend\controllers\team.controller.js
+============================================================
+const db = require('../db');
+
+// Tüm Takımları Getir
+exports.getTeams = async (req, res) => {
+    try {
+        const [teams] = await db.query('SELECT * FROM teams ORDER BY name ASC');
+        res.json(teams);
+    } catch (err) {
+        console.error("Takımlar çekilirken hata:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Yeni Takım Ekle (Logo ile birlikte)
+exports.addTeam = async (req, res) => {
+    const { name } = req.body;
+    
+    // Yüklenen logonun yolunu alıyoruz (Eğer logo yüklenmemişse null kalır)
+    const logoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        await db.query('INSERT INTO teams (name, logo_path) VALUES (?, ?)', [name, logoPath]);
+        res.json({ message: 'Takım başarıyla eklendi!' });
+    } catch (err) {
+        console.error("Takım eklenirken hata:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Takım Sil
+exports.deleteTeam = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM teams WHERE id = ?', [id]);
+        res.json({ message: 'Takım başarıyla silindi!' });
+    } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
@@ -4919,6 +5175,59 @@ router.get('/:slug', newsController.getNewsBySlug);
 module.exports = router;
 
 ============================================================
+DOSYA YOLU: backend\routes\poll.routes.js
+============================================================
+const express = require('express');
+const router = express.Router();
+const pollController = require('../controllers/poll.controller');
+
+router.get('/', pollController.getPolls);
+router.post('/vote', pollController.votePoll);
+
+module.exports = router;
+
+============================================================
+DOSYA YOLU: backend\routes\standings.routes.js
+============================================================
+const express = require('express');
+const router = express.Router();
+const standingsController = require('../controllers/standings.controller');
+
+router.get('/', standingsController.getStandings);
+router.post('/toggle', standingsController.toggleVisibility);
+router.put('/update', standingsController.updateTeamStats);
+
+module.exports = router;
+
+============================================================
+DOSYA YOLU: backend\routes\team.routes.js
+============================================================
+const express = require('express');
+const router = express.Router();
+const teamController = require('../controllers/team.controller');
+const multer = require('multer');
+const path = require('path');
+
+// Resim yükleme (Multer) ayarları
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/') // Logolar da diğer resimlerle aynı yere gitsin
+    },
+    filename: function (req, file, cb) {
+        // Çakışmayı önlemek için ismin sonuna zaman damgası ekliyoruz
+        cb(null, 'logo_' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+// API Uç Noktaları
+router.get('/', teamController.getTeams);
+router.post('/', upload.single('logo'), teamController.addTeam);
+router.delete('/:id', teamController.deleteTeam);
+
+module.exports = router;
+
+============================================================
 DOSYA YOLU: database\vetiabanı_kodlari.sql
 ============================================================
 -- 1. Veritabanını oluştur ve seç
@@ -5185,6 +5494,7 @@ DOSYA YOLU: frontend\package.json
     "express": "^5.1.0",
     "font-awesome": "^4.7.0",
     "ng2-charts": "^8.0.0",
+    "ngx-image-cropper": "^9.1.6",
     "ngx-quill": "^26.0.0",
     "ngx-toastr": "^20.0.5",
     "quill": "^2.0.2",
@@ -5355,7 +5665,7 @@ DOSYA YOLU: frontend\tsconfig.spec.json
 DOSYA YOLU: frontend\src\index.html
 ============================================================
 <!doctype html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="utf-8">
   <title>Nerik Dijital Medya</title>
@@ -5468,6 +5778,7 @@ DOSYA YOLU: frontend\src\app\app.html
                 <a href="#" class="text-white-50 hover-white"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" class="text-white-50 hover-white"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="#" class="text-white-50 hover-white"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white-50 hover-white"><i class="fab fa-tiktok"></i></a>
                 <a href="#" class="text-white-50 hover-white"><i class="fab fa-youtube"></i></a>
             </div>
         </div>
@@ -5541,6 +5852,7 @@ DOSYA YOLU: frontend\src\app\app.html
                     <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fa-brands fa-x-twitter"></i></a>
                     <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-tiktok"></i></a>
                     <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
@@ -5598,8 +5910,13 @@ import { NewsDetailComponent } from './components/news-detail/news-detail';
 import { NewsListComponent } from './components/news-list/news-list';
 import { PrivacyComponent } from './components/privacy/privacy';
 import { CookiesComponent } from './components/cookies/cookies';
+import { TeamsComponent } from './admin/teams/teams';
+import { StandingsComponent } from './admin/standings/standings';
+import { LeagueTableComponent } from './components/league-table/league-table';
 
 export const routes: Routes = [
+
+    { path: 'puan-durumu', component: LeagueTableComponent },
     // 1. Site açılınca direkt Anasayfaya git
     { path: '', component: HomeComponent },
     
@@ -5608,8 +5925,11 @@ export const routes: Routes = [
 
     { path: 'haber/:slug', component: NewsDetailComponent },
 
+
     // 3. Dashboard sayfası için route 
     { path: 'admin', component: DashboardComponent },
+    { path: 'admin/teams', component: TeamsComponent },
+    { path: 'admin/standings', component: StandingsComponent },
 
     { path: 'admin', component: DashboardComponent, canActivate: [authGuard] },
 
@@ -5728,6 +6048,405 @@ export class AppComponent implements OnInit {
 }
 
 ============================================================
+DOSYA YOLU: frontend\src\app\admin\standings\standings.css
+============================================================
+[DOSYA BOŞ]
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\standings\standings.html
+============================================================
+<div class="container-fluid mt-4">
+  
+  <div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="fw-bold mb-1"><i class="fas fa-trophy text-warning me-2"></i> Puan Durumu Yönetimi</h5>
+        <p class="text-muted small mb-0">Lig tablosunu ve anasayfa görünürlüğünü buradan yönetebilirsiniz.</p>
+      </div>
+      
+      <div class="form-check form-switch form-switch-lg fs-4">
+        <input class="form-check-input" type="checkbox" role="switch" id="visibilitySwitch" 
+               [(ngModel)]="isVisibleOnHome" (change)="toggleVisibility()">
+        <label class="form-check-label ms-2 fs-6 fw-bold" [ngClass]="isVisibleOnHome ? 'text-success' : 'text-danger'" for="visibilitySwitch">
+          {{ isVisibleOnHome ? 'Anasayfada Aktif' : 'Anasayfada Gizli' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+      <h6 class="m-0 fw-bold">Takım İstatistikleri (Güncel Sezon)</h6>
+      <button class="btn btn-success btn-sm fw-bold px-3" (click)="saveStandings()">
+        <i class="fas fa-save me-1"></i> Tümünü Kaydet
+      </button>
+    </div>
+    <div class="card-body p-0 table-responsive">
+      <table class="table table-hover table-bordered align-middle mb-0 text-center">
+        <thead class="table-light">
+          <tr>
+            <th class="text-start ps-3">Takım Adı</th>
+            <th width="80">O</th>
+            <th width="80">G</th>
+            <th width="80">B</th>
+            <th width="80">M</th>
+            <th width="80" class="text-success">A.G</th>
+            <th width="80" class="text-danger">Y.G</th>
+            <th width="100" class="bg-primary text-white">Puan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let team of teams">
+            <td class="text-start fw-bold ps-3">{{ team.team_name }}</td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.played"></td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.won"></td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.drawn"></td>
+            <td><input type="number" class="form-control form-control-sm text-center" [(ngModel)]="team.lost"></td>
+            <td><input type="number" class="form-control form-control-sm text-center text-success fw-bold" [(ngModel)]="team.goals_for"></td>
+            <td><input type="number" class="form-control form-control-sm text-center text-danger fw-bold" [(ngModel)]="team.goals_against"></td>
+            <td><input type="number" class="form-control form-control-sm text-center bg-primary text-white fw-bold" [(ngModel)]="team.points"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\standings\standings.spec.ts
+============================================================
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Standings } from './standings';
+
+describe('Standings', () => {
+  let component: Standings;
+  let fixture: ComponentFixture<Standings>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [Standings]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Standings);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\standings\standings.ts
+============================================================
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+
+// DİKKAT: Eğer bu satır hala hata veriyorsa, bu satırı silip VS Code'un otomatik bulmasını sağlayacağız.
+import { StandingsService } from '../../services/standings'; 
+
+@Component({
+  selector: 'app-admin-standings',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './standings.html', // (veya standings.component.html)
+  styleUrls: ['./standings.css']   // (veya standings.component.css)
+})
+export class StandingsComponent implements OnInit {
+  teams: any[] = [];
+  isVisibleOnHome: boolean = true; 
+
+  constructor(
+    private standingsService: StandingsService,
+    private toastr: ToastrService
+  ) { }
+
+  ngOnInit(): void {
+    this.loadStandings();
+  }
+
+  loadStandings() {
+    this.standingsService.getStandings().subscribe({
+      // BURAYA : any EKLENDİ
+      next: (data: any) => { 
+        this.teams = data.teams;
+        this.isVisibleOnHome = data.isVisible;
+      },
+      // BURAYA : any EKLENDİ
+      error: (err: any) => console.error(err) 
+    });
+  }
+
+  toggleVisibility() {
+    this.standingsService.toggleVisibility(this.isVisibleOnHome).subscribe({
+      // BURAYA : any EKLENDİ
+      next: (res: any) => { 
+        if (this.isVisibleOnHome) {
+          this.toastr.success('Puan durumu anasayfada GÖSTERİLECEK', 'Ayar Kaydedildi');
+        } else {
+          this.toastr.warning('Puan durumu anasayfadan GİZLENDİ', 'Ayar Kaydedildi');
+        }
+      },
+      // BURAYA : any EKLENDİ
+      error: (err: any) => this.toastr.error('Ayar kaydedilemedi', 'Hata') 
+    });
+  }
+
+  saveStandings() {
+    this.standingsService.updateStandings(this.teams).subscribe({
+      // BURAYA : any EKLENDİ
+      next: (res: any) => { 
+        this.toastr.success(res.message, 'Başarılı');
+        this.loadStandings(); 
+      },
+      // BURAYA : any EKLENDİ
+      error: (err: any) => this.toastr.error('Kaydedilirken hata oluştu', 'Hata') 
+    });
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\teams\teams.css
+============================================================
+[DOSYA BOŞ]
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\teams\teams.html
+============================================================
+<div class="container-fluid mt-4">
+  <div class="row">
+    
+    <div class="col-md-5">
+      <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="m-0"><i class="fas fa-shield-alt me-2"></i> Yeni Takım Ekle</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Takım Adı</label>
+            <input type="text" class="form-control" [(ngModel)]="teamName" placeholder="Örn: Vezirköprüspor">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Takım Logosu</label>
+            <input type="file" class="form-control" (change)="fileChangeEvent($event)" accept="image/*" />
+          </div>
+
+          <div class="mb-3" *ngIf="imageChangedEvent">
+            <p class="text-muted small">Logoyu çerçeveye oturtun (1:1 Kare formatı önerilir)</p>
+            <image-cropper
+              [imageChangedEvent]="imageChangedEvent"
+              [maintainAspectRatio]="true"
+              [aspectRatio]="1 / 1"
+              format="png"
+              (imageCropped)="imageCropped($event)"
+              style="max-height: 300px;">
+            </image-cropper>
+          </div>
+
+          <div class="mb-3 text-center" *ngIf="croppedImage">
+            <label class="form-label fw-bold w-100 text-start">Logo Önizleme</label>
+            <img [src]="croppedImage" class="img-thumbnail rounded-circle shadow" style="width: 120px; height: 120px; object-fit: cover;" />
+          </div>
+
+          <button class="btn btn-success w-100 fw-bold" (click)="saveTeam()">
+            <i class="fas fa-save me-2"></i> Takımı Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="m-0"><i class="fas fa-list me-2"></i> Kayıtlı Takımlar Havuzu</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-3">Logo</th>
+                <th scope="col">Takım Adı</th>
+                <th scope="col" class="text-end pe-3">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let team of teams">
+                <td class="ps-3">
+                  <img *ngIf="team.logo_path" [src]="'http://localhost:3000' + team.logo_path" alt="{{team.name}}" class="rounded-circle border" style="width: 45px; height: 45px; object-fit: cover;">
+                  <span *ngIf="!team.logo_path" class="badge bg-secondary p-2">Logosuz</span>
+                </td>
+                <td class="fw-bold">{{ team.name }}</td>
+                <td class="text-end pe-3">
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteTeam(team.id)">
+                    <i class="fas fa-trash"></i> Sil
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="teams.length === 0">
+                <td colspan="3" class="text-center text-muted py-4">Henüz sisteme takım eklenmedi.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\teams\teams.spec.ts
+============================================================
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Teams } from './teams';
+
+describe('Teams', () => {
+  let component: Teams;
+  let fixture: ComponentFixture<Teams>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [Teams]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Teams);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+============================================================
+DOSYA YOLU: frontend\src\app\admin\teams\teams.ts
+============================================================
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common'; 
+import { FormsModule } from '@angular/forms'; 
+
+// 1. DEĞİŞİKLİK: ImageCropperModule yerine ImageCropperComponent yazıyoruz
+import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper'; 
+
+import { TeamService } from '../../services/team.service';
+import { ToastrService } from 'ngx-toastr';
+
+@Component({
+  selector: 'app-admin-teams',
+  standalone: true, 
+  // 2. DEĞİŞİKLİK: imports dizisine de ImageCropperComponent yazıyoruz
+  imports: [CommonModule, FormsModule, ImageCropperComponent], 
+  templateUrl: './teams.html',
+  styleUrls: ['./teams.css']
+})
+export class TeamsComponent implements OnInit {
+  teams: any[] = [];
+  teamName: string = '';
+
+  // Kırpma (Cropper) Değişkenleri
+  imageChangedEvent: any = '';
+  croppedImage: any = '';
+  croppedFile: File | null = null;
+
+  constructor(
+    private teamService: TeamService,
+    private toastr: ToastrService
+  ) { }
+
+  ngOnInit(): void {
+    this.loadTeams();
+  }
+
+  loadTeams() {
+    this.teamService.getTeams().subscribe({
+      next: (data) => this.teams = data,
+      error: (err) => console.error(err)
+    });
+  }
+
+  // Bilgisayardan dosya seçildiğinde tetiklenir
+  fileChangeEvent(event: any): void {
+    this.imageChangedEvent = event;
+  }
+
+  // Resim kırpıldığında tetiklenir
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedImage = event.base64 || event.objectUrl; // Ekranda önizleme için
+    
+    // İşin sırrı burası: Kırpılan Base64 resmi, Backend'in (multer) anlayacağı File objesine çeviriyoruz
+    if (event.base64) {
+      this.croppedFile = this.base64ToFile(event.base64, 'logo.png');
+    } else if (event.blob) {
+      this.croppedFile = new File([event.blob], 'logo.png', { type: 'image/png' });
+    }
+  }
+
+  // Base64 to File dönüştürücü fonksiyon
+  base64ToFile(data: string, filename: string): File {
+    const arr = data.split(',');
+    const mime = arr[0].match(/:(.*?);/)![1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  // Takımı Kaydet
+  saveTeam() {
+    if (!this.teamName) {
+      this.toastr.warning('Lütfen takım adını girin.', 'Uyarı');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', this.teamName);
+    
+    if (this.croppedFile) {
+      formData.append('logo', this.croppedFile); // Kırpılmış logoyu form datasına ekle
+    }
+
+    this.teamService.addTeam(formData).subscribe({
+      next: (res) => {
+        this.toastr.success(res.message, 'Başarılı');
+        this.loadTeams(); // Tabloyu güncelle
+        // Formu temizle
+        this.teamName = '';
+        this.imageChangedEvent = '';
+        this.croppedImage = '';
+        this.croppedFile = null;
+      },
+      error: (err) => this.toastr.error('Takım eklenemedi.', 'Hata')
+    });
+  }
+
+  deleteTeam(id: number) {
+    if (confirm('Bu takımı silmek istediğinize emin misiniz?')) {
+      this.teamService.deleteTeam(id).subscribe({
+        next: (res) => {
+          this.toastr.success(res.message, 'Silindi');
+          this.loadTeams();
+        },
+        error: (err) => this.toastr.error('Silme işlemi başarısız.', 'Hata')
+      });
+    }
+  }
+}
+
+============================================================
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.css
 ============================================================
 /* --- Admin Paneli STİLLERİ (Değişken Yok, Doğrudan Renk) --- */
@@ -5828,305 +6547,962 @@ table img {
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.html
 ============================================================
 <div class="admin-wrapper d-flex">
-    
-    <div class="sidebar bg-dark text-white min-vh-100 d-flex flex-column" id="sidebar" style="width: 280px; position: fixed; top:0; left:0; bottom:0; overflow-y: auto; z-index: 1000;">
-        <div class="sidebar-brand text-center py-4 border-bottom border-secondary">
-            <span class="text-primary fw-bold fs-3">N</span><span class="text-white fw-bold fs-3">ERİK</span>
-            <small class="d-block text-white-50 mt-1" style="font-size: 0.75rem; letter-spacing: 2px;">YÖNETİM PANELİ</small>
-        </div>
-        
-        <nav class="mt-4 px-3 d-flex flex-column gap-2 flex-grow-1">
-            
-            <a (click)="switchTab('overview')" 
-               [class.active]="activeTab === 'overview'" 
-               [class.bg-primary]="activeTab === 'overview'"
-               class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center" style="cursor: pointer; transition: 0.3s;">
-               <i class="fas fa-chart-pie me-3 fa-lg" style="width: 25px;"></i> 
-               <span class="fw-bold">Genel Bakış</span>
-            </a>
-
-            <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">İÇERİK YÖNETİMİ</div>
-
-            <a *ngIf="checkPermission('news')" (click)="switchTab('news')" [class.active]="activeTab === 'news'" [class.bg-secondary]="activeTab === 'news'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fas fa-newspaper me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Haberler</span>
-            </a>
-
-            <a *ngIf="checkPermission('slider')" (click)="switchTab('slider')" [class.active]="activeTab === 'slider'" [class.bg-warning]="activeTab === 'slider'" [class.text-dark]="activeTab === 'slider'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fas fa-images me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Manşet Yönetimi</span>
-            </a>
-
-            <a *ngIf="checkPermission('breaking')" (click)="switchTab('breaking')" [class.active]="activeTab === 'breaking'" [class.bg-danger]="activeTab === 'breaking'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fas fa-bolt me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Son Dakika</span>
-            </a>
-
-            <a *ngIf="checkPermission('columnists')" (click)="switchTab('columnists')" [class.active]="activeTab === 'columnists'" [class.bg-info]="activeTab === 'columnists'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fas fa-pen-nib me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Köşe Yazıları</span>
-            </a>
-
-            <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">MEDYA & REKLAM</div>
-
-            <a *ngIf="checkPermission('videos')" (click)="switchTab('videos')" [class.active]="activeTab === 'videos'" [class.bg-danger]="activeTab === 'videos'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fab fa-youtube me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Video Galeri</span>
-            </a>
-
-            <a *ngIf="checkPermission('ads')" (click)="switchTab('ads')" [class.active]="activeTab === 'ads'" [class.bg-success]="activeTab === 'ads'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fas fa-ad me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Reklamlar</span>
-            </a>
-
-            <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">SİSTEM</div>
-
-            <a *ngIf="checkPermission('personnel')" (click)="switchTab('personnel')" [class.active]="activeTab === 'personnel'" [class.bg-light]="activeTab === 'personnel'" [class.text-dark]="activeTab === 'personnel'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
-               <i class="fas fa-users-cog me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Personel</span>
-            </a>
-
-            <div class="mt-auto mb-4">
-                <hr class="border-secondary my-3">
-                <a routerLink="/" class="nav-link rounded p-3 text-info hover-text-white d-flex align-items-center cursor-pointer">
-                    <i class="fas fa-external-link-alt me-3"></i> Siteyi Gör
-                </a>
-                <a (click)="onLogout()" class="nav-link rounded p-3 text-danger hover-text-white d-flex align-items-center cursor-pointer">
-                    <i class="fas fa-sign-out-alt me-3"></i> Çıkış Yap
-                </a>
-            </div>
-        </nav>
+  <div
+    class="sidebar bg-dark text-white min-vh-100 d-flex flex-column"
+    id="sidebar"
+    style="
+      width: 280px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 1000;
+    "
+  >
+    <div class="sidebar-brand text-center py-4 border-bottom border-secondary">
+      <span class="text-primary fw-bold fs-3">N</span
+      ><span class="text-white fw-bold fs-3">ERİK</span>
+      <small class="d-block text-white-50 mt-1" style="font-size: 0.75rem; letter-spacing: 2px"
+        >YÖNETİM PANELİ</small
+      >
     </div>
 
-    <div class="main-content flex-grow-1 bg-light min-vh-100" style="margin-left: 280px;">
-        
-        <div class="sticky-top bg-white shadow-sm p-4 d-flex justify-content-between align-items-center mb-4" style="z-index: 900;">
-            <div>
-                <h4 class="fw-bold text-dark mb-0 text-uppercase ls-1">
-                    {{ activeTab === 'overview' ? 'SİTE ÖZETİ' : activeTab + ' YÖNETİMİ' }}
-                </h4>
-                <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Admin' }}</small>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <img *ngIf="currentUser?.image_path" [src]="baseUrl + currentUser.image_path" class="rounded-circle border" width="45" height="45" style="object-fit: cover;">
-                <div *ngIf="!currentUser?.image_path" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 45px; height: 45px;">
-                    {{ currentUser?.full_name?.charAt(0) || 'A' }}
-                </div>
-            </div>
+    <nav class="mt-4 px-3 d-flex flex-column gap-2 flex-grow-1">
+      <a
+        (click)="switchTab('overview')"
+        [class.active]="activeTab === 'overview'"
+        [class.bg-primary]="activeTab === 'overview'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center"
+        style="cursor: pointer; transition: 0.3s"
+      >
+        <i class="fas fa-chart-pie me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Genel Bakış</span>
+      </a>
+
+      <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">İÇERİK YÖNETİMİ</div>
+
+      <a
+        *ngIf="checkPermission('news')"
+        (click)="switchTab('news')"
+        [class.active]="activeTab === 'news'"
+        [class.bg-secondary]="activeTab === 'news'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-newspaper me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Haberler</span>
+      </a>
+
+      <a
+        *ngIf="checkPermission('slider')"
+        (click)="switchTab('slider')"
+        [class.active]="activeTab === 'slider'"
+        [class.bg-warning]="activeTab === 'slider'"
+        [class.text-dark]="activeTab === 'slider'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-images me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Manşet Yönetimi</span>
+      </a>
+
+      <a
+        *ngIf="checkPermission('breaking')"
+        (click)="switchTab('breaking')"
+        [class.active]="activeTab === 'breaking'"
+        [class.bg-danger]="activeTab === 'breaking'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-bolt me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Son Dakika</span>
+      </a>
+
+      <a
+        *ngIf="checkPermission('columnists')"
+        (click)="switchTab('columnists')"
+        [class.active]="activeTab === 'columnists'"
+        [class.bg-info]="activeTab === 'columnists'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-pen-nib me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Köşe Yazıları</span>
+      </a>
+
+      <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">SPOR YÖNETİMİ</div>
+
+      <a
+        *ngIf="checkPermission('teams')"
+        (click)="switchTab('teams')"
+        [class.bg-info]="activeTab === 'teams'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-shield-alt me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Takımlar</span>
+      </a>
+
+      <a
+        *ngIf="checkPermission('standings')"
+        (click)="switchTab('standings')"
+        [class.bg-success]="activeTab === 'standings'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-table me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Puan Durumu</span>
+      </a>
+
+      <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">MEDYA & REKLAM</div>
+
+      <a
+        *ngIf="checkPermission('videos')"
+        (click)="switchTab('videos')"
+        [class.active]="activeTab === 'videos'"
+        [class.bg-danger]="activeTab === 'videos'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fab fa-youtube me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Video Galeri</span>
+      </a>
+
+      <a
+        *ngIf="checkPermission('ads')"
+        (click)="switchTab('ads')"
+        [class.active]="activeTab === 'ads'"
+        [class.bg-success]="activeTab === 'ads'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-ad me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Reklamlar</span>
+      </a>
+
+      <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">SİSTEM</div>
+
+      <a
+        *ngIf="checkPermission('personnel')"
+        (click)="switchTab('personnel')"
+        [class.active]="activeTab === 'personnel'"
+        [class.bg-light]="activeTab === 'personnel'"
+        [class.text-dark]="activeTab === 'personnel'"
+        class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer"
+      >
+        <i class="fas fa-users-cog me-3 fa-lg" style="width: 25px"></i>
+        <span class="fw-bold">Personel</span>
+      </a>
+
+      <div class="mt-auto mb-4">
+        <hr class="border-secondary my-3" />
+        <a
+          routerLink="/"
+          class="nav-link rounded p-3 text-info hover-text-white d-flex align-items-center cursor-pointer"
+        >
+          <i class="fas fa-external-link-alt me-3"></i> Siteyi Gör
+        </a>
+        <a
+          (click)="onLogout()"
+          class="nav-link rounded p-3 text-danger hover-text-white d-flex align-items-center cursor-pointer"
+        >
+          <i class="fas fa-sign-out-alt me-3"></i> Çıkış Yap
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main-content flex-grow-1 bg-light min-vh-100" style="margin-left: 280px">
+    <div
+      class="sticky-top bg-white shadow-sm p-4 d-flex justify-content-between align-items-center mb-4"
+      style="z-index: 900"
+    >
+      <div>
+        <h4 class="fw-bold text-dark mb-0 text-uppercase ls-1">
+          {{ activeTab === 'overview' ? 'SİTE ÖZETİ' : activeTab + ' YÖNETİMİ' }}
+        </h4>
+        <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Admin' }}</small>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <img
+          *ngIf="currentUser?.image_path"
+          [src]="baseUrl + currentUser.image_path"
+          class="rounded-circle border"
+          width="45"
+          height="45"
+          style="object-fit: cover"
+        />
+        <div
+          *ngIf="!currentUser?.image_path"
+          class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5"
+          style="width: 45px; height: 45px"
+        >
+          {{ currentUser?.full_name?.charAt(0) || 'A' }}
         </div>
-
-        <div class="container-fluid px-4 pb-5">
-
-            <div *ngIf="activeTab === 'overview'" class="fade-in">
-                
-                <div class="row g-4 mb-5" *ngIf="stats">
-                    <div class="col-md-4">
-                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                            <div class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-primary">
-                                <div>
-                                    <h6 class="text-muted text-uppercase fw-bold mb-1">Toplam Haber</h6>
-                                    <h2 class="fw-bold text-dark m-0">{{ stats.totalNews }}</h2>
-                                </div>
-                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-newspaper fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                            <div class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-success">
-                                <div>
-                                    <h6 class="text-muted text-uppercase fw-bold mb-1">Toplam Okunma</h6>
-                                    <h2 class="fw-bold text-dark m-0">{{ stats.totalViews | number }}</h2>
-                                </div>
-                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-eye fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                            <div class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-warning">
-                                <div>
-                                    <h6 class="text-muted text-uppercase fw-bold mb-1">Kayıtlı Personel</h6>
-                                    <h2 class="fw-bold text-dark m-0">{{ stats.totalUsers }}</h2>
-                                </div>
-                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                    <i class="fas fa-users fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm rounded-4 h-100">
-                            <div class="card-header bg-white py-3 border-bottom">
-                                <h6 class="fw-bold m-0 text-dark"><i class="fas fa-chart-pie me-2 text-primary"></i> Editör Performansı (Haber Sayısı)</h6>
-                            </div>
-                            <div class="card-body d-flex align-items-center justify-content-center">
-                                <canvas baseChart
-                                        [data]="pieChartData"
-                                        [options]="pieChartOptions"
-                                        [type]="'pie'">
-                                </canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm rounded-4 h-100">
-                            <div class="card-header bg-white py-3 border-bottom">
-                                <h6 class="fw-bold m-0 text-dark"><i class="fas fa-chart-bar me-2 text-success"></i> En Çok Okunan 5 Haber</h6>
-                            </div>
-                            <div class="card-body">
-                                <canvas baseChart
-                                        [data]="barChartData"
-                                        [options]="barChartOptions"
-                                        [type]="'bar'">
-                                </canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm rounded-4">
-                            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                                <h6 class="fw-bold m-0 text-dark">
-                                    <i class="fas fa-calendar-week me-2 text-primary"></i> Son 7 Günde Eklenen Haberlerin Performansı
-                                </h6>
-                            </div>
-                            <div class="card-body p-4">
-                                <div style="height: 350px; width: 100%;">
-                                    <canvas baseChart
-                                            [data]="recentNewsData"
-                                            [options]="recentNewsOptions"
-                                            [type]="'bar'">
-                                    </canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div *ngIf="activeTab === 'news'" class="fade-in">
-                <div class="mb-4" *ngIf="!showForm">
-                    <button class="btn btn-primary px-4 py-3 fw-bold shadow hover-scale rounded-pill" (click)="showForm = true"><i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle</button>
-                </div>
-
-                <div class="card border-0 shadow p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showForm">
-                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                        <h5 class="fw-bold mb-0 text-primary">{{ isEditing ? 'Haberi Düzenle' : 'Yeni Haber' }}</h5>
-                        <button class="btn-close" (click)="resetForm()"></button>
-                    </div>
-                    <div class="row g-4">
-                        <div class="col-lg-8">
-                            <div class="mb-4"><label class="form-label fw-bold small text-secondary">BAŞLIK</label><input type="text" [(ngModel)]="newsData.title" class="form-control form-control-lg fw-bold"></div>
-                            <div class="mb-3"><label class="form-label fw-bold small text-secondary">İÇERİK</label><div class="bg-white border rounded-3 overflow-hidden"><quill-editor [(ngModel)]="newsData.content" [styles]="{height: '350px'}"></quill-editor></div></div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="card bg-light border-0 p-4 rounded-4 h-100">
-                                <div class="mb-4"><label class="form-label fw-bold small text-secondary">KATEGORİ</label><select [(ngModel)]="newsData.category" class="form-select form-select-lg"><option value="GÜNDEM">GÜNDEM</option><option value="EKONOMİ">EKONOMİ</option><option value="SPOR">SPOR</option><option value="TEKNOLOJİ">TEKNOLOJİ</option></select></div>
-                                <div class="mb-4"><label class="form-label fw-bold small text-secondary">GÖRSEL</label><input type="file" #fileInput (change)="onFileSelected($event)" class="d-none" accept="image/*"><div class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer" (click)="fileInput.click()"><div *ngIf="!selectedFile && !newsData.image"><i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i><h6>Resim Seç</h6></div><div [class.d-none]="!selectedFile && !newsData.image"><img #imageElement class="img-fluid rounded"></div></div></div>
-                                <div class="d-grid gap-2 mt-auto"><button (click)="saveNews()" class="btn btn-primary fw-bold py-3">{{ isEditing ? 'GÜNCELLE' : 'YAYINLA' }}</button><button (click)="resetForm()" class="btn btn-outline-secondary">VAZGEÇ</button></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card border-0 shadow rounded-4 overflow-hidden" *ngIf="!showForm">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-muted small text-uppercase"><tr><th class="ps-4 py-3">Görsel</th><th>Başlık</th><th>Kategori</th><th class="text-end pe-4">İşlemler</th></tr></thead>
-                        <tbody><tr *ngFor="let news of newsList"><td class="ps-4"><img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="rounded shadow-sm" width="60"></td><td class="fw-bold">{{ news.title }}</td><td><span class="badge bg-primary-subtle text-primary">{{ news.category_name }}</span></td><td class="text-end pe-4"><button (click)="editItem(news, 'news')" class="btn btn-sm btn-light text-warning me-2"><i class="fas fa-edit"></i></button><button (click)="deleteItem(news.id, 'news')" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button></td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div *ngIf="activeTab === 'slider'" class="fade-in">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow h-100">
-                            <div class="card-header bg-warning text-dark py-3"><h6 class="fw-bold m-0"><i class="fas fa-star me-2"></i> YAYINDAKİ MANŞETLER</h6></div>
-                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
-                                <table class="table table-hover align-middle mb-0">
-                                    <tr *ngFor="let news of activeSliderNews"><td class="ps-3"><img [src]="baseUrl + news.image_path" width="60" class="rounded"></td><td class="small fw-bold">{{ news.title }}</td><td class="text-end pe-3"><button class="btn btn-outline-danger btn-sm rounded-circle" (click)="toggleStatus(news, 'is_slider')"><i class="fas fa-times"></i></button></td></tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow h-100">
-                            <div class="card-header bg-light py-3"><h6 class="fw-bold m-0 text-secondary"><i class="fas fa-list me-2"></i> HAVUZ (ADAYLAR)</h6></div>
-                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
-                                <table class="table table-hover align-middle mb-0">
-                                    <tr *ngFor="let news of candidateNews"><td class="ps-3"><img [src]="baseUrl + news.image_path" width="60" class="rounded opacity-75"></td><td class="small text-muted">{{ news.title }}</td><td class="text-end pe-3"><button class="btn btn-success btn-sm rounded-circle" (click)="toggleStatus(news, 'is_slider')"><i class="fas fa-plus"></i></button></td></tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="activeTab === 'breaking'" class="fade-in">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow h-100">
-                            <div class="card-header bg-danger text-white py-3"><h6 class="fw-bold m-0"><i class="fas fa-bolt me-2"></i> AKTİF SON DAKİKALAR</h6></div>
-                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
-                                <table class="table table-hover align-middle mb-0">
-                                    <tr *ngFor="let news of activeBreakingNews"><td class="ps-4 small fw-bold">{{ news.title }}</td><td class="text-end pe-4"><button class="btn btn-outline-danger btn-sm rounded-circle" (click)="toggleStatus(news, 'is_breaking')"><i class="fas fa-times"></i></button></td></tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow h-100">
-                            <div class="card-header bg-light py-3"><h6 class="fw-bold m-0 text-secondary"><i class="fas fa-list me-2"></i> HAVUZ (ADAYLAR)</h6></div>
-                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
-                                <table class="table table-hover align-middle mb-0">
-                                    <tr *ngFor="let news of candidateNews"><td class="ps-4 small text-muted">{{ news.title }}</td><td class="text-end pe-4"><button class="btn btn-outline-danger btn-sm rounded-circle" (click)="toggleStatus(news, 'is_breaking')"><i class="fas fa-plus"></i></button></td></tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="activeTab === 'columnists'" class="fade-in">
-                <div class="mb-4" *ngIf="!showForm"><button class="btn btn-info text-white px-4 py-3 fw-bold shadow hover-scale rounded-pill" (click)="showForm = true"><i class="fas fa-plus-circle me-2"></i> YENİ YAZI YAZ</button></div>
-                <div *ngIf="showForm" class="card border-0 shadow p-4 mb-4 rounded-4 bg-white fade-in">
-                    <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold text-info"><img *ngIf="currentUser.image_path" [src]="baseUrl + currentUser.image_path" class="rounded-circle me-2" width="30"> {{ currentUser.full_name }} Olarak Yazıyorsunuz</h5><button class="btn-close" (click)="resetForm()"></button></div>
-                    <div class="row g-3"><div class="col-12"><label class="fw-bold small text-muted">BAŞLIK</label><input [(ngModel)]="postData.title" class="form-control form-control-lg fw-bold"></div><div class="col-12"><label class="fw-bold small text-muted">İÇERİK</label><div class="bg-white border rounded overflow-hidden"><quill-editor [(ngModel)]="postData.content" [styles]="{height: '400px'}"></quill-editor></div></div><div class="col-12 text-end"><button (click)="saveColumnPost()" class="btn btn-info text-white btn-lg fw-bold px-5">YAYINLA</button></div></div>
-                </div>
-                <div class="card border-0 shadow rounded-4 overflow-hidden mt-4" *ngIf="!showForm">
-                    <table class="table table-hover align-middle mb-0"><thead class="bg-light text-muted small"><tr><th class="ps-4">YAZAR</th><th>BAŞLIK</th><th>TARİH</th><th class="text-end pe-4">İŞLEM</th></tr></thead><tbody><tr *ngFor="let post of columnPostList"><td class="ps-4"><span class="fw-bold text-dark">{{ post.author_name }}</span></td><td class="fw-bold text-secondary">{{ post.title }}</td><td class="small text-muted">{{ post.created_at | date:'dd.MM.yyyy' }}</td><td class="text-end pe-4"><button (click)="deleteColumnPost(post.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i> Sil</button></td></tr></tbody></table>
-                </div>
-            </div>
-
-            <div *ngIf="activeTab === 'personnel'" class="fade-in">
-                <div class="mb-4" *ngIf="!showForm"><button class="btn btn-dark text-white px-4 py-3 fw-bold shadow rounded-pill" (click)="showForm = true"><i class="fas fa-user-plus me-2"></i> YENİ PERSONEL EKLE</button></div>
-                <div *ngIf="showForm" class="card border-0 shadow p-4 mb-4 rounded-4 bg-white fade-in">
-                     <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold text-dark">{{ isEditing ? 'Personeli Düzenle' : 'Yeni Personel' }}</h5><button class="btn-close" (click)="resetForm()"></button></div>
-                     <div class="row g-3"><div class="col-md-6"><label class="small fw-bold text-muted">Kullanıcı Adı</label><input [(ngModel)]="userData.username" class="form-control"></div><div class="col-md-6"><label class="small fw-bold text-muted">Şifre</label><input [(ngModel)]="userData.password" type="password" class="form-control"></div><div class="col-md-6"><label class="small fw-bold text-muted">Ad Soyad</label><input [(ngModel)]="userData.full_name" class="form-control"></div><div class="col-md-6"><label class="small fw-bold text-muted">Yetki</label><select [(ngModel)]="userData.role" class="form-select"><option value="author">Yazar</option><option value="editor">Editör</option><option value="admin">Yönetici</option></select></div><div class="col-12"><label class="small fw-bold text-muted">Resim</label><input type="file" (change)="onFileSelected($event)" class="form-control"></div><div class="col-12 text-end"><button (click)="saveUser()" class="btn btn-dark fw-bold px-5">{{ isEditing ? 'GÜNCELLE' : 'KAYDET' }}</button></div></div>
-                </div>
-                <div class="card border-0 shadow rounded-4 overflow-hidden" *ngIf="!showForm">
-                    <table class="table table-hover align-middle mb-0"><thead class="bg-light text-muted small"><tr><th>Personel</th><th>Kullanıcı Adı</th><th>Yetki</th><th class="text-end pe-4">İşlem</th></tr></thead><tbody><tr *ngFor="let user of userList"><td class="ps-4"><span class="fw-bold">{{ user.full_name }}</span></td><td>{{ user.username }}</td><td>{{ user.role | uppercase }}</td><td class="text-end pe-4"><button (click)="editUser(user)" class="btn btn-sm btn-light text-primary me-2"><i class="fas fa-edit"></i></button><button (click)="deleteUser(user.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button></td></tr></tbody></table>
-                </div>
-            </div>
-
-            <div *ngIf="activeTab === 'videos'" class="fade-in">
-                <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-5"><input [(ngModel)]="videoData.title" class="form-control" placeholder="Video Başlığı"></div><div class="col-md-5"><input [(ngModel)]="videoData.url" class="form-control" placeholder="YouTube Linki"></div><div class="col-md-2"><button (click)="saveVideo()" class="btn btn-danger w-100">Ekle</button></div></div></div>
-                <div class="row g-3"><div *ngFor="let v of videoList" class="col-md-4"><div class="card h-100 shadow-sm border-0"><iframe [src]="sanitizer.bypassSecurityTrustResourceUrl(v.url)" height="200" frameborder="0" allowfullscreen></iframe><div class="card-body d-flex justify-content-between"><span class="small fw-bold">{{ v.title }}</span><button (click)="deleteItem(v.id, 'videos')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></div></div></div></div>
-            </div>
-
-            <div *ngIf="activeTab === 'ads'" class="fade-in">
-                <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-3"><input [(ngModel)]="adData.title" class="form-control" placeholder="Reklam Adı"></div><div class="col-md-3"><input [(ngModel)]="adData.target_url" class="form-control" placeholder="URL"></div><div class="col-md-2"><select [(ngModel)]="adData.area" class="form-select"><option value="sidebar">Sidebar</option><option value="header">Header</option></select></div><div class="col-md-2"><input type="file" id="adFile" class="form-control"></div><div class="col-md-2"><button (click)="saveAd()" class="btn btn-success w-100">Ekle</button></div></div></div>
-                <div class="row g-3"><div *ngFor="let ad of adList" class="col-md-3"><div class="card h-100"><img [src]="baseUrl + ad.image_path" class="card-img-top" style="height: 100px; object-fit: contain;"><div class="card-body"><p class="small fw-bold m-0">{{ ad.title }}</p><button (click)="deleteItem(ad.id, 'ads')" class="btn btn-sm btn-danger float-end"><i class="fas fa-trash"></i></button></div></div></div></div>
-            </div>
-
-        </div>
+      </div>
     </div>
+
+    <div class="container-fluid px-4 pb-5">
+      <div *ngIf="activeTab === 'overview'" class="fade-in">
+        <div class="row g-4 mb-5" *ngIf="stats">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+              <div
+                class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-primary"
+              >
+                <div>
+                  <h6 class="text-muted text-uppercase fw-bold mb-1">Toplam Haber</h6>
+                  <h2 class="fw-bold text-dark m-0">{{ stats.totalNews }}</h2>
+                </div>
+                <div
+                  class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="fas fa-newspaper fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+              <div
+                class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-success"
+              >
+                <div>
+                  <h6 class="text-muted text-uppercase fw-bold mb-1">Toplam Okunma</h6>
+                  <h2 class="fw-bold text-dark m-0">{{ stats.totalViews | number }}</h2>
+                </div>
+                <div
+                  class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="fas fa-eye fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+              <div
+                class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-warning"
+              >
+                <div>
+                  <h6 class="text-muted text-uppercase fw-bold mb-1">Kayıtlı Personel</h6>
+                  <h2 class="fw-bold text-dark m-0">{{ stats.totalUsers }}</h2>
+                </div>
+                <div
+                  class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="fas fa-users fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+              <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold m-0 text-dark">
+                  <i class="fas fa-chart-pie me-2 text-primary"></i> Editör Performansı (Haber
+                  Sayısı)
+                </h6>
+              </div>
+              <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="'pie'">
+                </canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+              <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold m-0 text-dark">
+                  <i class="fas fa-chart-bar me-2 text-success"></i> En Çok Okunan 5 Haber
+                </h6>
+              </div>
+              <div class="card-body">
+                <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'">
+                </canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+              <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                <h6 class="fw-bold m-0 text-dark">
+                  <i class="fas fa-calendar-week me-2 text-primary"></i> Son 7 Günde Eklenen
+                  Haberlerin Performansı
+                </h6>
+              </div>
+              <div class="card-body p-4">
+                <div style="height: 350px; width: 100%">
+                  <canvas
+                    baseChart
+                    [data]="recentNewsData"
+                    [options]="recentNewsOptions"
+                    [type]="'bar'"
+                  >
+                  </canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'news'" class="fade-in">
+        <div class="mb-4" *ngIf="!showForm">
+          <button
+            class="btn btn-primary px-4 py-3 fw-bold shadow hover-scale rounded-pill"
+            (click)="showForm = true"
+          >
+            <i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle
+          </button>
+        </div>
+
+        <div class="card border-0 shadow p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showForm">
+          <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <h5 class="fw-bold mb-0 text-primary">
+              {{ isEditing ? 'Haberi Düzenle' : 'Yeni Haber' }}
+            </h5>
+            <button class="btn-close" (click)="resetForm()"></button>
+          </div>
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="mb-4">
+                <label class="form-label fw-bold small text-secondary">BAŞLIK</label
+                ><input
+                  type="text"
+                  [(ngModel)]="newsData.title"
+                  class="form-control form-control-lg fw-bold"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold small text-secondary">İÇERİK</label>
+                <div class="bg-white border rounded-3 overflow-hidden">
+                  <quill-editor
+                    [(ngModel)]="newsData.content"
+                    [styles]="{ height: '350px' }"
+                  ></quill-editor>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card bg-light border-0 p-4 rounded-4 h-100">
+                <div class="mb-4">
+                  <label class="form-label fw-bold small text-secondary">KATEGORİ</label
+                  ><select [(ngModel)]="newsData.category" class="form-select form-select-lg">
+                    <option value="GÜNDEM">GÜNDEM</option>
+                    <option value="EKONOMİ">EKONOMİ</option>
+                    <option value="SPOR">SPOR</option>
+                    <option value="TEKNOLOJİ">TEKNOLOJİ</option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label fw-bold small text-secondary">GÖRSEL</label
+                  ><input
+                    type="file"
+                    #fileInput
+                    (change)="onFileSelected($event)"
+                    class="d-none"
+                    accept="image/*"
+                  />
+                  <div
+                    class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer"
+                    (click)="fileInput.click()"
+                  >
+                    <div *ngIf="!selectedFile && !newsData.image">
+                      <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                      <h6>Resim Seç</h6>
+                    </div>
+                    <div [class.d-none]="!selectedFile && !newsData.image">
+                      <img #imageElement class="img-fluid rounded" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-grid gap-2 mt-auto">
+                  <button (click)="saveNews()" class="btn btn-primary fw-bold py-3">
+                    {{ isEditing ? 'GÜNCELLE' : 'YAYINLA' }}</button
+                  ><button (click)="resetForm()" class="btn btn-outline-secondary">VAZGEÇ</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow rounded-4 overflow-hidden" *ngIf="!showForm">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted small text-uppercase">
+              <tr>
+                <th class="ps-4 py-3">Görsel</th>
+                <th>Başlık</th>
+                <th>Kategori</th>
+                <th class="text-end pe-4">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let news of newsList">
+                <td class="ps-4">
+                  <img
+                    *ngIf="news.image_path"
+                    [src]="baseUrl + news.image_path"
+                    class="rounded shadow-sm"
+                    width="60"
+                  />
+                </td>
+                <td class="fw-bold">{{ news.title }}</td>
+                <td>
+                  <span class="badge bg-primary-subtle text-primary">{{ news.category_name }}</span>
+                </td>
+                <td class="text-end pe-4">
+                  <button
+                    (click)="editItem(news, 'news')"
+                    class="btn btn-sm btn-light text-warning me-2"
+                  >
+                    <i class="fas fa-edit"></i></button
+                  ><button
+                    (click)="deleteItem(news.id, 'news')"
+                    class="btn btn-sm btn-light text-danger"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'slider'" class="fade-in">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card border-0 shadow h-100">
+              <div class="card-header bg-warning text-dark py-3">
+                <h6 class="fw-bold m-0"><i class="fas fa-star me-2"></i> YAYINDAKİ MANŞETLER</h6>
+              </div>
+              <div class="card-body p-0 overflow-auto" style="max-height: 600px">
+                <table class="table table-hover align-middle mb-0">
+                  <tr *ngFor="let news of activeSliderNews">
+                    <td class="ps-3">
+                      <img [src]="baseUrl + news.image_path" width="60" class="rounded" />
+                    </td>
+                    <td class="small fw-bold">{{ news.title }}</td>
+                    <td class="text-end pe-3">
+                      <button
+                        class="btn btn-outline-danger btn-sm rounded-circle"
+                        (click)="toggleStatus(news, 'is_slider')"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-0 shadow h-100">
+              <div class="card-header bg-light py-3">
+                <h6 class="fw-bold m-0 text-secondary">
+                  <i class="fas fa-list me-2"></i> HAVUZ (ADAYLAR)
+                </h6>
+              </div>
+              <div class="card-body p-0 overflow-auto" style="max-height: 600px">
+                <table class="table table-hover align-middle mb-0">
+                  <tr *ngFor="let news of candidateNews">
+                    <td class="ps-3">
+                      <img
+                        [src]="baseUrl + news.image_path"
+                        width="60"
+                        class="rounded opacity-75"
+                      />
+                    </td>
+                    <td class="small text-muted">{{ news.title }}</td>
+                    <td class="text-end pe-3">
+                      <button
+                        class="btn btn-success btn-sm rounded-circle"
+                        (click)="toggleStatus(news, 'is_slider')"
+                      >
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'breaking'" class="fade-in">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card border-0 shadow h-100">
+              <div class="card-header bg-danger text-white py-3">
+                <h6 class="fw-bold m-0"><i class="fas fa-bolt me-2"></i> AKTİF SON DAKİKALAR</h6>
+              </div>
+              <div class="card-body p-0 overflow-auto" style="max-height: 600px">
+                <table class="table table-hover align-middle mb-0">
+                  <tr *ngFor="let news of activeBreakingNews">
+                    <td class="ps-4 small fw-bold">{{ news.title }}</td>
+                    <td class="text-end pe-4">
+                      <button
+                        class="btn btn-outline-danger btn-sm rounded-circle"
+                        (click)="toggleStatus(news, 'is_breaking')"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-0 shadow h-100">
+              <div class="card-header bg-light py-3">
+                <h6 class="fw-bold m-0 text-secondary">
+                  <i class="fas fa-list me-2"></i> HAVUZ (ADAYLAR)
+                </h6>
+              </div>
+              <div class="card-body p-0 overflow-auto" style="max-height: 600px">
+                <table class="table table-hover align-middle mb-0">
+                  <tr *ngFor="let news of candidateNews">
+                    <td class="ps-4 small text-muted">{{ news.title }}</td>
+                    <td class="text-end pe-4">
+                      <button
+                        class="btn btn-outline-danger btn-sm rounded-circle"
+                        (click)="toggleStatus(news, 'is_breaking')"
+                      >
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'columnists'" class="fade-in">
+        <div class="mb-4" *ngIf="!showForm">
+          <button
+            class="btn btn-info text-white px-4 py-3 fw-bold shadow hover-scale rounded-pill"
+            (click)="showForm = true"
+          >
+            <i class="fas fa-plus-circle me-2"></i> YENİ YAZI YAZ
+          </button>
+        </div>
+        <div *ngIf="showForm" class="card border-0 shadow p-4 mb-4 rounded-4 bg-white fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-info">
+              <img
+                *ngIf="currentUser.image_path"
+                [src]="baseUrl + currentUser.image_path"
+                class="rounded-circle me-2"
+                width="30"
+              />
+              {{ currentUser.full_name }} Olarak Yazıyorsunuz
+            </h5>
+            <button class="btn-close" (click)="resetForm()"></button>
+          </div>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="fw-bold small text-muted">BAŞLIK</label
+              ><input [(ngModel)]="postData.title" class="form-control form-control-lg fw-bold" />
+            </div>
+            <div class="col-12">
+              <label class="fw-bold small text-muted">İÇERİK</label>
+              <div class="bg-white border rounded overflow-hidden">
+                <quill-editor
+                  [(ngModel)]="postData.content"
+                  [styles]="{ height: '400px' }"
+                ></quill-editor>
+              </div>
+            </div>
+            <div class="col-12 text-end">
+              <button
+                (click)="saveColumnPost()"
+                class="btn btn-info text-white btn-lg fw-bold px-5"
+              >
+                YAYINLA
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card border-0 shadow rounded-4 overflow-hidden mt-4" *ngIf="!showForm">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted small">
+              <tr>
+                <th class="ps-4">YAZAR</th>
+                <th>BAŞLIK</th>
+                <th>TARİH</th>
+                <th class="text-end pe-4">İŞLEM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let post of columnPostList">
+                <td class="ps-4">
+                  <span class="fw-bold text-dark">{{ post.author_name }}</span>
+                </td>
+                <td class="fw-bold text-secondary">{{ post.title }}</td>
+                <td class="small text-muted">{{ post.created_at | date: 'dd.MM.yyyy' }}</td>
+                <td class="text-end pe-4">
+                  <button
+                    (click)="deleteColumnPost(post.id)"
+                    class="btn btn-sm btn-light text-danger"
+                  >
+                    <i class="fas fa-trash"></i> Sil
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'personnel'" class="fade-in">
+        <div class="mb-4" *ngIf="!showForm">
+          <button
+            class="btn btn-dark text-white px-4 py-3 fw-bold shadow rounded-pill"
+            (click)="showForm = true"
+          >
+            <i class="fas fa-user-plus me-2"></i> YENİ PERSONEL EKLE
+          </button>
+        </div>
+        <div *ngIf="showForm" class="card border-0 shadow p-4 mb-4 rounded-4 bg-white fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark">
+              {{ isEditing ? 'Personeli Düzenle' : 'Yeni Personel' }}
+            </h5>
+            <button class="btn-close" (click)="resetForm()"></button>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="small fw-bold text-muted">Kullanıcı Adı</label
+              ><input [(ngModel)]="userData.username" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="small fw-bold text-muted">Şifre</label
+              ><input [(ngModel)]="userData.password" type="password" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="small fw-bold text-muted">Ad Soyad</label
+              ><input [(ngModel)]="userData.full_name" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="small fw-bold text-muted">Yetki</label
+              ><select [(ngModel)]="userData.role" class="form-select">
+                <option value="author">Yazar</option>
+                <option value="editor">Editör</option>
+                <option value="admin">Yönetici</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="small fw-bold text-muted">Resim</label
+              ><input type="file" (change)="onFileSelected($event)" class="form-control" />
+            </div>
+            <div class="col-12 text-end">
+              <button (click)="saveUser()" class="btn btn-dark fw-bold px-5">
+                {{ isEditing ? 'GÜNCELLE' : 'KAYDET' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card border-0 shadow rounded-4 overflow-hidden" *ngIf="!showForm">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted small">
+              <tr>
+                <th>Personel</th>
+                <th>Kullanıcı Adı</th>
+                <th>Yetki</th>
+                <th class="text-end pe-4">İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of userList">
+                <td class="ps-4">
+                  <span class="fw-bold">{{ user.full_name }}</span>
+                </td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role | uppercase }}</td>
+                <td class="text-end pe-4">
+                  <button (click)="editUser(user)" class="btn btn-sm btn-light text-primary me-2">
+                    <i class="fas fa-edit"></i></button
+                  ><button (click)="deleteUser(user.id)" class="btn btn-sm btn-light text-danger">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'videos'" class="fade-in">
+        <div class="card p-4 mb-4 border-0 shadow-sm">
+          <div class="row g-2">
+            <div class="col-md-5">
+              <input
+                [(ngModel)]="videoData.title"
+                class="form-control"
+                placeholder="Video Başlığı"
+              />
+            </div>
+            <div class="col-md-5">
+              <input [(ngModel)]="videoData.url" class="form-control" placeholder="YouTube Linki" />
+            </div>
+            <div class="col-md-2">
+              <button (click)="saveVideo()" class="btn btn-danger w-100">Ekle</button>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div *ngFor="let v of videoList" class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+              <iframe
+                [src]="sanitizer.bypassSecurityTrustResourceUrl(v.url)"
+                height="200"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div class="card-body d-flex justify-content-between">
+                <span class="small fw-bold">{{ v.title }}</span
+                ><button (click)="deleteItem(v.id, 'videos')" class="btn btn-sm btn-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'ads'" class="fade-in">
+        <div class="card p-4 mb-4 border-0 shadow-sm">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <input [(ngModel)]="adData.title" class="form-control" placeholder="Reklam Adı" />
+            </div>
+            <div class="col-md-3">
+              <input [(ngModel)]="adData.target_url" class="form-control" placeholder="URL" />
+            </div>
+            <div class="col-md-2">
+              <select [(ngModel)]="adData.area" class="form-select">
+                <option value="sidebar">Sidebar</option>
+                <option value="header">Header</option>
+              </select>
+            </div>
+            <div class="col-md-2"><input type="file" id="adFile" class="form-control" /></div>
+            <div class="col-md-2">
+              <button (click)="saveAd()" class="btn btn-success w-100">Ekle</button>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div *ngFor="let ad of adList" class="col-md-3">
+            <div class="card h-100">
+              <img
+                [src]="baseUrl + ad.image_path"
+                class="card-img-top"
+                style="height: 100px; object-fit: contain"
+              />
+              <div class="card-body">
+                <p class="small fw-bold m-0">{{ ad.title }}</p>
+                <button (click)="deleteItem(ad.id, 'ads')" class="btn btn-sm btn-danger float-end">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'teams'" class="fade-in">
+      <div class="row g-4">
+        <div class="col-md-5">
+          <div class="card border-0 shadow rounded-4 p-4">
+            <h5 class="fw-bold mb-4 text-primary">Yeni Takım Ekle</h5>
+            <div class="mb-3">
+              <label class="form-label fw-bold small">TAKIM ADI</label>
+              <input
+                type="text"
+                [(ngModel)]="teamData.name"
+                class="form-control"
+                placeholder="Örn: Vezirköprüspor"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-bold small">LOGO (1:1 Kırpılır)</label>
+              <input
+                type="file"
+                #teamFileInput
+                (change)="onFileSelected($event)"
+                class="d-none"
+                accept="image/*"
+              />
+              <div
+                class="image-upload-box bg-light border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer"
+                (click)="teamFileInput.click()"
+              >
+                <div *ngIf="!selectedFile">
+                  <i class="fas fa-upload fa-2x text-muted mb-2"></i>
+                  <h6>Logo Seç</h6>
+                </div>
+                <div [class.d-none]="!selectedFile">
+                  <img
+                    #imageElement
+                    class="img-fluid rounded shadow-sm"
+                    style="max-height: 200px"
+                  />
+                </div>
+              </div>
+            </div>
+            <button (click)="saveTeam()" class="btn btn-primary w-100 fw-bold py-3">
+              TAKIMI KAYDET
+            </button>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="card border-0 shadow rounded-4 overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-dark text-white">
+                <tr>
+                  <th class="ps-4 py-3">Logo</th>
+                  <th>Takım Adı</th>
+                  <th class="text-end pe-4">İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let team of teamList">
+                  <td class="ps-4">
+                    <img
+                      [src]="baseUrl + team.logo_path"
+                      class="rounded-circle border"
+                      width="40"
+                      height="40"
+                      style="object-fit: cover"
+                    />
+                  </td>
+                  <td class="fw-bold">{{ team.name }}</td>
+                  <td class="text-end pe-4">
+                    <button (click)="deleteTeam(team.id)" class="btn btn-sm btn-outline-danger">
+                      <i class="fas fa-trash"></i> Sil
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'standings'" class="fade-in">
+      <div
+        class="card border-0 shadow rounded-4 p-4 mb-4 bg-white d-flex flex-row justify-content-between align-items-center"
+      >
+        <div>
+          <h5 class="fw-bold mb-1 text-success">Lig Puan Tablosu</h5>
+          <p class="text-muted small mb-0">Rakamları girip "Tümünü Kaydet" butonuna basınız.</p>
+        </div>
+        <div class="form-check form-switch fs-4">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            [(ngModel)]="standingsVisible"
+            (change)="toggleStandings()"
+          />
+          <label class="form-check-label fs-6 fw-bold ms-2">{{
+            standingsVisible ? 'Sitede Yayında' : 'Sitede Gizli'
+          }}</label>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow rounded-4 overflow-hidden bg-white">
+        <div
+          class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3"
+        >
+          <h6 class="m-0 fw-bold">Puan Giriş Ekranı</h6>
+          <button (click)="saveStandings()" class="btn btn-success btn-sm px-4 fw-bold shadow-sm">
+            TÜMÜNÜ KAYDET
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0 text-center">
+            <thead class="table-light small fw-bold">
+              <tr>
+                <th class="text-start ps-3">TAKIM</th>
+                <th>O</th>
+                <th>G</th>
+                <th>B</th>
+                <th>M</th>
+                <th>AG</th>
+                <th>YG</th>
+                <th class="bg-primary text-white">PUAN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let st of standingsList">
+                <td class="text-start ps-3 fw-bold">{{ st.team_name }}</td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.played"
+                    class="form-control form-control-sm text-center"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.won"
+                    class="form-control form-control-sm text-center"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.drawn"
+                    class="form-control form-control-sm text-center"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.lost"
+                    class="form-control form-control-sm text-center"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.goals_for"
+                    class="form-control form-control-sm text-center text-success"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.goals_against"
+                    class="form-control form-control-sm text-center text-danger"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="st.points"
+                    class="form-control form-control-sm text-center fw-bold bg-primary-subtle"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
 
 ============================================================
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.spec.ts
@@ -6174,6 +7550,8 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { AuthService } from '../../../services/auth';
 import { NewsService } from '../../../services/news'; 
 import { DashboardService } from '../../../services/dashboard';
+import { TeamService } from '../../../services/team.service';
+import { StandingsService } from '../../../services/standings';
 
 @Component({
   selector: 'app-dashboard',
@@ -6197,16 +7575,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // --- LİSTELER ---
   newsList: any[] = [];
-  
-  // Manşet ve Son Dakika için Ayrılmış Listeler
-  activeSliderNews: any[] = []; // Soldaki Liste (Yayında)
-  activeBreakingNews: any[] = []; // Soldaki Liste (Yayında)
-  candidateNews: any[] = [];      // Sağdaki Liste (Adaylar)
-
+  activeSliderNews: any[] = [];
+  activeBreakingNews: any[] = [];
+  candidateNews: any[] = [];
   videoList: any[] = [];
   adList: any[] = [];
   userList: any[] = [];
   columnPostList: any[] = [];
+  
+  // SPOR LİSTELERİ
+  teamList: any[] = [];
+  standingsList: any[] = [];
+  standingsVisible: boolean = true;
 
   // --- FORM DATALARI ---
   newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
@@ -6214,6 +7594,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   adData = { title: '', target_url: '', area: 'sidebar', image: null };
   userData = { username: '', password: '', full_name: '', role: 'author', image: null };
   postData = { title: '', content: '' }; 
+  teamData = { name: '' }; // Yeni Takım Formu
+
 
   // 1. PASTA GRAFİK (Editör Performansı)
   pieChartData: ChartConfiguration<'pie'>['data'] = {
@@ -6254,7 +7636,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     public sanitizer: DomSanitizer,
     private newsService: NewsService, 
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private teamService: TeamService, // Enjekte edildi
+    private standingsService: StandingsService // Enjekte edildi
   ) {}
 
   ngOnInit() {
@@ -6318,7 +7702,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!this.currentUser || !this.currentUser.permissions) return false;
     const p = this.currentUser.permissions;
     if (p.all === true) return true;
-    if (section === 'news' || section === 'slider' || section === 'breaking' || section === 'videos') return p.can_edit_news === true;
+    if (['news', 'slider', 'breaking', 'videos', 'teams', 'standings'].includes(section)) return p.can_edit_news === true;
     if (section === 'ads') return p.all === true; 
     if (section === 'columnists') return p.can_post_column === true;
     if (section === 'personnel') return p.all === true;
@@ -6332,8 +7716,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   switchTab(tabName: string) {
     this.activeTab = tabName;
     this.resetForm();
-    
-    // Hangi sekmeye geçildiyse onun verisini yükle
     if (tabName === 'overview') this.loadStats();
     else if (tabName === 'news') this.getNews();
     else if (tabName === 'slider') this.loadSliderEditor();
@@ -6341,7 +7723,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     else if (tabName === 'videos') this.getVideos();
     else if (tabName === 'ads') this.getAds();
     else if (tabName === 'personnel') this.getUsers();
-    else if (tabName === 'columnists') this.getColumnPosts(); 
+    else if (tabName === 'columnists') this.getColumnPosts();
+    else if (tabName === 'teams') this.getTeams(); // Takımlar
+    else if (tabName === 'standings') this.getStandings(); // Puan Durumu
   }
 
   // ==========================================
@@ -6560,17 +7944,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
   deleteAd(id: number) { this.http.delete(`${this.baseUrl}/api/ads/${id}`).subscribe(() => this.getAds()); }
 
-  // YARDIMCILAR
-  resetForm() {
-    this.showForm = false; 
-    this.isEditing = false; 
-    this.selectedFile = false;
-    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
-    this.userData = { username: '', password: '', full_name: '', role: 'author', image: null };
-    this.postData = { title: '', content: '' };
-    if(this.cropper) { this.cropper.destroy(); this.cropper = null; }
-    if(this.imageElement && this.imageElement.nativeElement) this.imageElement.nativeElement.src = '';
-  }
+ // ==========================================
+  // YARDIMCILAR & DİĞERLERİ (Mevcutlara Eklemeler)
+  // ==========================================
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -6580,11 +7956,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
       reader.onload = (e: any) => {
         this.imageElement.nativeElement.src = e.target.result;
         if (this.cropper) { this.cropper.destroy(); }
-        const ratio = (this.activeTab === 'personnel') ? 1 : (16 / 9);
+        // Takımlar ve Personel için 1:1, Haberler için 16:9 oran
+        const ratio = (this.activeTab === 'personnel' || this.activeTab === 'teams') ? 1 : (16 / 9);
         this.cropper = new Cropper(this.imageElement.nativeElement, { aspectRatio: ratio, viewMode: 1, autoCropArea: 1 } as any);
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  resetForm() {
+    this.showForm = false; 
+    this.isEditing = false; 
+    this.selectedFile = false;
+    this.newsData = { title: '', category: 'GÜNDEM', content: '', image: null };
+    this.userData = { username: '', password: '', full_name: '', role: 'author', image: null };
+    this.teamData = { name: '' }; // Takım formunu sıfırla
+    this.postData = { title: '', content: '' };
+    if(this.cropper) { this.cropper.destroy(); this.cropper = null; }
+    if(this.imageElement && this.imageElement.nativeElement) this.imageElement.nativeElement.src = '';
   }
 
   getLast7DaysLabels(): string[] {
@@ -6598,6 +7987,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     return dates;
   }
+
+  // ==========================================
+  // SPOR (TAKIM VE PUAN DURUMU) İŞLEMLERİ
+  // ==========================================
+
+  getTeams() {
+    this.teamService.getTeams().subscribe(res => { this.teamList = res; this.cdr.detectChanges(); });
+  }
+
+  saveTeam() {
+    if (!this.teamData.name) return alert("Takım adı giriniz!");
+    const formData = new FormData();
+    formData.append('name', this.teamData.name);
+    
+    if (this.cropper) {
+      this.cropper.getCroppedCanvas().toBlob((blob: any) => {
+        formData.append('logo', blob, 'logo.png');
+        this.teamService.addTeam(formData).subscribe(() => { alert("Takım eklendi!"); this.resetForm(); this.getTeams(); });
+      });
+    } else {
+      this.teamService.addTeam(formData).subscribe(() => { alert("Takım eklendi!"); this.resetForm(); this.getTeams(); });
+    }
+  }
+
+  deleteTeam(id: number) {
+    if(confirm('Takımı silerseniz puan durumu verileri de silinir. Emin misiniz?')) {
+      this.teamService.deleteTeam(id).subscribe(() => this.getTeams());
+    }
+  }
+
+  getStandings() {
+    this.standingsService.getStandings().subscribe((res: any) => {
+      this.standingsList = res.teams;
+      this.standingsVisible = res.isVisible;
+      this.cdr.detectChanges();
+    });
+  }
+
+  saveStandings() {
+    this.standingsService.updateStandings(this.standingsList).subscribe(() => {
+      alert("Puan durumu güncellendi!");
+      this.getStandings();
+    });
+  }
+
+  toggleStandings() {
+    this.standingsService.toggleVisibility(this.standingsVisible).subscribe();
+  }
+
+  
 }
 
 ============================================================
@@ -6906,6 +8345,41 @@ DOSYA YOLU: frontend\src\app\components\home\home.css
     width: 200px; padding: 0 10px;
 }
 
+/* 1. BAŞLIK DÜZELTME: Siyah zemin üzerine beyaz yazı */
+.standings-header h6 {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Okunurluğu artırır */
+}
+
+/* 2. LOGO DÜZELTME: Uçup giden boyutları geri getirelim */
+.team-logo-mini {
+    width: 28px !important;
+    height: 28px !important;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* 3. VEZİRKÖPRÜ VURGUSU (EN ÖNEMLİ KISIM) */
+/* Bootstrap td'leri boyadığı için biz de doğrudan td'leri hedefliyoruz */
+.custom-standings-table tbody tr.vezirkopru-highlight td {
+    background-color: #dc3545 !important; /* Canlı Kırmızı */
+    color: #ffffff !important;           /* Kar beyazı yazı */
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Vezirköprü satırındaki sıra numarasını da beyaz yapalım */
+.vezirkopru-highlight .rank-number {
+    color: #ffffff !important;
+    opacity: 0.9;
+}
+
+/* Puan hücresini (P) vurguda biraz daha parlatabiliriz */
+.vezirkopru-highlight .points-cell {
+    font-weight: 900 !important;
+    background-color: rgba(0, 0, 0, 0.1) !important; /* Hafif gölge */
+}
+
 ============================================================
 DOSYA YOLU: frontend\src\app\components\home\home.html
 ============================================================
@@ -6957,8 +8431,8 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
                     <div class="position-absolute bottom-0 start-0 w-100 p-4" 
                          style="background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);">
                         <span class="badge bg-danger mb-2">{{ sliderNews[currentSlideIndex].category_name || 'Gündem' }}</span>
-                        <h2 class="text-white fw-bold mb-1 text-shadow display-6" style="font-size: 1.75rem;">
-                            {{ sliderNews[currentSlideIndex].title | uppercase }}
+                        <h2 class="text-white fw-bold mb-1 text-shadow display-6 text-uppercase" style="font-size: 1.75rem;">
+                            {{ sliderNews[currentSlideIndex].title }}
                         </h2>
                     </div>
                 </a>
@@ -7008,8 +8482,8 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
 
                     <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
                         <h4 class="fw-bold text-dark mb-2">
-                            <a [routerLink]="['/haber', news.slug]" class="text-decoration-none text-dark hover-text-primary">
-                                {{ news.title | uppercase }}
+                            <a [routerLink]="['/haber', news.slug]" class="text-decoration-none text-dark hover-text-primary text-uppercase">
+                                {{ news.title }}
                             </a>
                         </h4>
                         <p class="text-muted small mb-3 line-clamp-2" [innerHTML]="news.content | slice:0:150"></p>
@@ -7038,6 +8512,86 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
 
             <div *ngIf="sidebarAds.length === 0" class="bg-white d-flex align-items-center justify-content-center border rounded-4 mb-4 shadow-sm" style="height: 300px; border-style: dashed !important;">
                 <span class="text-secondary small fw-bold">REKLAM ALANI</span>
+            </div>
+
+            <div class="standings-container mb-4" *ngIf="standingsData.isVisible && standingsData.teams.length > 0">
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-dark py-3 d-flex align-items-center justify-content-between">
+        <h6 class="m-0 fw-bold text-white">
+            <i class="fas fa-list-ol me-2 text-warning"></i> PUAN DURUMU
+        </h6>
+        <span class="badge bg-danger small">Süper Amatör A</span>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm table-hover mb-0 custom-standings-table">
+        <thead class="table-light">
+          <tr class="text-center small">
+            <th class="text-start ps-3 py-2">TAKIM</th>
+            <th width="30">O</th>
+            <th width="30">AV</th>
+            <th width="35" class="bg-light fw-bold">P</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let team of standingsData.teams; let i = index" 
+              [ngClass]="{'vezirkopru-highlight': team.team_name.includes('Vezirköprü')}"
+              class="text-center align-middle">
+            
+            <td class="text-start ps-3 py-2 d-flex align-items-center">
+              <span class="rank-number me-2">{{ i + 1 }}.</span>
+              <img [src]="'http://localhost:3000' + team.logo_path" class="team-logo-mini me-2" *ngIf="team.logo_path">
+              <span class="team-name text-truncate">{{ team.team_name }}</span>
+            </td>
+            
+            <td>{{ team.played }}</td>
+            <td>{{ team.goals_for - team.goals_against }}</td>
+            <td class="fw-bold bg-light">{{ team.points }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white text-center py-2">
+        <a routerLink="/puan-durumu" class="text-decoration-none small fw-bold text-primary all-details-link">
+            Tüm Detaylar <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+    </div>
+  </div>
+</div>
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                    <h6 class="fw-bold m-0"><i class="fas fa-poll me-2"></i> Sitemizi Nasıl Buldunuz?</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Görüşleriniz bizim için çok değerli. Lütfen ankete katılın.</p>
+    
+                    <div *ngIf="!hasVoted">
+                        <div class="d-grid gap-2">
+                            <button *ngFor="let poll of polls" 
+                                (click)="submitVote(poll.id)" 
+                                class="btn btn-outline-primary text-start fw-bold">
+                                    {{ poll.option_text }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div *ngIf="hasVoted">
+                        <div class="mb-3" *ngFor="let poll of polls">
+                            <div class="d-flex justify-content-between small fw-bold mb-1">
+                                <span>{{ poll.option_text }}</span>
+                                <span>%{{ getPercentage(poll.vote_count) }} ({{ poll.vote_count }} Oy)</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                [style.width.%]="getPercentage(poll.vote_count)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3 text-muted small fw-bold">
+                            Toplam Oy: {{ totalVotes }}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-5 position-sticky" style="top: 100px;">
@@ -7073,7 +8627,31 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
                     <p class="mb-0 small fw-bold">Henüz köşe yazısı girilmedi.</p>
                 </div>
             </div>
+
+            
+        
+
         </div>
+
+        <div class="container my-5">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+                <h4 class="fw-bold text-dark m-0"><i class="fab fa-youtube text-danger me-2"></i> Video Galeri</h4>
+            </div>
+  
+            <div class="row g-4">
+                <div class="col-md-4" *ngFor="let video of videos">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden hover-scale">
+                        <iframe [src]="getSafeUrl(video.url)" height="220" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width: 100%;"></iframe>
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold text-dark m-0" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ video.title }}
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </main>
 
@@ -7119,6 +8697,11 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NewsService } from '../../services/news';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subscription } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ToastrService } from 'ngx-toastr';
+import { PollService } from '../../services/poll.service';
+import { VideoService } from '../../services/video.service';
+import { StandingsService } from '../../services/standings';
 
 @Component({
   selector: 'app-home',
@@ -7129,6 +8712,7 @@ import { Observable, Subscription } from 'rxjs';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   // Değişkenler
+  standingsData: any = { isVisible: false, teams: [] };
   today: Date = new Date();
   latestNews: any[] = [];
   sliderNews: any[] = [];
@@ -7137,8 +8721,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   baseUrl = 'http://localhost:3000';
   headerAd: any = null;
   sidebarAds: any[] = [];
+
+  // Anket Değişkenleri
+  polls: any[] = [];
+  hasVoted: boolean = false;
+  totalVotes: number = 0;
+
+  // Video Değişkenleri
+  videos: any[] = [];
   
-  // SLIDER İÇİN YENİ DEĞİŞKENLER
+  // Slider Değişkenleri
   currentSlideIndex: number = 0;
   autoSlideInterval: any;
 
@@ -7146,13 +8738,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   private routerSubscription!: Subscription;
 
   constructor(
+    private standingsService: StandingsService,
     private newsService: NewsService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private pollService: PollService,
+    private videoService: VideoService,
+    private toastr: ToastrService,
+    public sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
     this.loadAllData();
+    this.getStandings();
 
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -7161,6 +8759,10 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    this.checkLocalVote();
+    this.loadPolls();
+    this.loadVideos();
   }
 
   ngOnDestroy() {
@@ -7251,6 +8853,230 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.autoSlideInterval) {
       clearInterval(this.autoSlideInterval);
     }
+  }
+
+  // --- ANKET FONKSİYONLARI ---
+  checkLocalVote() {
+    // Tarayıcı bazlı güvenlik: Daha önce oy kullandıysa formu kapat
+    if (localStorage.getItem('hasVoted')) {
+      this.hasVoted = true;
+    }
+  }
+
+  loadPolls() {
+    this.pollService.getPolls().subscribe({
+      next: (data) => {
+        this.polls = data;
+        this.calculateTotalVotes();
+      },
+      error: (err) => console.error('Anketler yüklenemedi', err)
+    });
+  }
+
+  calculateTotalVotes() {
+    this.totalVotes = this.polls.reduce((acc, poll) => acc + poll.vote_count, 0);
+  }
+
+  getPercentage(voteCount: number): number {
+    if (this.totalVotes === 0) return 0;
+    return Math.round((voteCount / this.totalVotes) * 100);
+  }
+
+  submitVote(optionId: number) {
+    if (this.hasVoted) {
+      this.toastr.warning('Zaten oy kullandınız!', 'Uyarı');
+      return;
+    }
+
+    this.pollService.vote(optionId).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res.message, 'Başarılı');
+        localStorage.setItem('hasVoted', 'true');
+        this.hasVoted = true;
+        this.loadPolls(); // Oranları güncelle
+      },
+      error: (err) => {
+        if (err.status === 403) {
+          this.toastr.warning('Bu ağdan daha önce oy kullanılmış.', 'Uyarı');
+          localStorage.setItem('hasVoted', 'true'); // Backend yakaladıysa frontend'i de kilitle
+          this.hasVoted = true;
+        } else {
+          this.toastr.error('Bir hata oluştu.', 'Hata');
+        }
+      }
+    });
+  }
+
+  // --- VİDEO GALERİ FONKSİYONLARI ---
+  loadVideos() {
+    this.videoService.getVideos().subscribe({
+      next: (data) => {
+        // En son eklenen 3 videoyu anasayfada göster
+        this.videos = data.slice(0, 3); 
+      },
+      error: (err) => console.error('Videolar yüklenemedi', err)
+    });
+  }
+
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  getStandings() {
+    this.standingsService.getStandings().subscribe({
+      next: (data: any) => {
+        this.standingsData = data;
+      },
+      error: (err: any) => console.error('Puan durumu yüklenemedi', err)
+    });
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\components\league-table\league-table.css
+============================================================
+.custom-full-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.team-logo {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+/* Vezirköprüspor Vurgusu */
+.vezirkopru-row td {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+}
+
+.vezirkopru-row .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+/* Hover Efekti */
+.table-hover tbody tr:hover:not(.vezirkopru-row) {
+    background-color: #f1f4f9;
+}
+
+/* Başlık font ayarı */
+.card-header h2 {
+    font-family: 'Poppins', sans-serif;
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\components\league-table\league-table.html
+============================================================
+<div class="container my-5">
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="bg-dark p-4 d-flex justify-content-between align-items-center">
+          <h2 class="text-white m-0 fw-bold">
+            <i class="fas fa-trophy text-warning me-3"></i>Samsun Süper Amatör A Grubu
+          </h2>
+          <span class="text-white-50 fw-bold">{{ seasonName }}</span>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 custom-full-table">
+              <thead class="table-light py-3">
+                <tr class="text-center text-uppercase small fw-bold">
+                  <th class="text-start ps-4">Sıra</th>
+                  <th class="text-start">Takım</th>
+                  <th>O</th>
+                  <th>G</th>
+                  <th>B</th>
+                  <th>M</th>
+                  <th>AG</th>
+                  <th>YG</th>
+                  <th>AV</th>
+                  <th class="bg-primary text-white">PUAN</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let team of standings; let i = index" 
+                    [ngClass]="{'vezirkopru-row': team.team_name.includes('Vezirköprü')}">
+                  <td class="text-start ps-4 fw-bold text-muted">{{ i + 1 }}.</td>
+                  <td class="text-start fw-bold">
+                    <img [src]="'http://localhost:3000' + team.logo_path" class="team-logo me-3" *ngIf="team.logo_path">
+                    {{ team.team_name }}
+                  </td>
+                  <td class="text-center">{{ team.played }}</td>
+                  <td class="text-center">{{ team.won }}</td>
+                  <td class="text-center">{{ team.drawn }}</td>
+                  <td class="text-center">{{ team.lost }}</td>
+                  <td class="text-center">{{ team.goals_for }}</td>
+                  <td class="text-center">{{ team.goals_against }}</td>
+                  <td class="text-center fw-bold">{{ team.goals_for - team.goals_against }}</td>
+                  <td class="text-center fw-bolder bg-primary-subtle">{{ team.points }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+============================================================
+DOSYA YOLU: frontend\src\app\components\league-table\league-table.spec.ts
+============================================================
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { LeagueTable } from './league-table';
+
+describe('LeagueTable', () => {
+  let component: LeagueTable;
+  let fixture: ComponentFixture<LeagueTable>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LeagueTable]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(LeagueTable);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+============================================================
+DOSYA YOLU: frontend\src\app\components\league-table\league-table.ts
+============================================================
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { StandingsService } from '../../services/standings'; // Servis yolunu kontrol et
+
+@Component({
+  selector: 'app-league-table',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './league-table.html',
+  styleUrls: ['./league-table.css']
+})
+export class LeagueTableComponent implements OnInit {
+  standings: any[] = [];
+  seasonName: string = '2025-2026 Sezonu'; // Bunu API'den de çekebiliriz
+
+  constructor(private standingsService: StandingsService) { }
+
+  ngOnInit(): void {
+    this.standingsService.getStandings().subscribe({
+      next: (data: any) => this.standings = data.teams,
+      error: (err: any) => console.error('Veri çekilemedi', err)
+    });
   }
 }
 
@@ -8073,5 +9899,126 @@ export class NewsService {
     
     // 3. İsteği gönderirken headers'ı da ekle! ({ headers })
     return this.http.put(`${this.baseUrl}/news/${id}/status`, payload, { headers });
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\services\poll.service.ts
+============================================================
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PollService {
+  private baseUrl = 'http://localhost:3000/api/poll';
+
+  constructor(private http: HttpClient) { }
+
+  getPolls(): Observable<any> {
+    return this.http.get(this.baseUrl);
+  }
+
+  vote(optionId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/vote`, { optionId });
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\services\standings.spec.ts
+============================================================
+import { TestBed } from '@angular/core/testing';
+
+import { Standings } from './standings';
+
+describe('Standings', () => {
+  let service: Standings;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(Standings);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});
+
+
+============================================================
+DOSYA YOLU: frontend\src\app\services\standings.ts
+============================================================
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root' // Bu satır olmazsa "No suitable injection token" hatası alırsın
+})
+export class StandingsService {
+  private baseUrl = 'http://localhost:3000/api/standings';
+
+  constructor(private http: HttpClient) { }
+
+  getStandings(): Observable<any> {
+    return this.http.get(this.baseUrl);
+  }
+
+  toggleVisibility(isVisible: boolean): Observable<any> {
+    return this.http.post(`${this.baseUrl}/toggle`, { isVisible });
+  }
+
+  updateStandings(teamsData: any[]): Observable<any> {
+    return this.http.put(`${this.baseUrl}/update`, teamsData);
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\services\team.service.ts
+============================================================
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TeamService {
+  private baseUrl = 'http://localhost:3000/api/teams';
+
+  constructor(private http: HttpClient) { }
+
+  getTeams(): Observable<any> {
+    return this.http.get(this.baseUrl);
+  }
+
+  addTeam(formData: FormData): Observable<any> {
+    return this.http.post(this.baseUrl, formData);
+  }
+
+  deleteTeam(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/${id}`);
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\services\video.service.ts
+============================================================
+    import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class VideoService {
+  private baseUrl = 'http://localhost:3000/api/videos';
+
+  constructor(private http: HttpClient) { }
+
+  getVideos(): Observable<any> {
+    return this.http.get(this.baseUrl);
   }
 }

@@ -112,6 +112,43 @@
                     </div>
                 </article>
             </div>
+<nav class="mt-4 d-flex justify-content-center" *ngIf="totalPages > 1">
+  <ul class="pagination pagination-lg">
+
+    <li class="page-item" [class.disabled]="currentPage === 1">
+      <button class="page-link" (click)="loadNews(currentPage - 1)">«</button>
+    </li>
+
+    <li class="page-item" *ngIf="visiblePages[0] > 1">
+      <button class="page-link" (click)="loadNews(1)">1</button>
+    </li>
+
+    <li class="page-item disabled" *ngIf="visiblePages[0] > 2">
+      <span class="page-link">...</span>
+    </li>
+
+    <li class="page-item"
+        *ngFor="let page of visiblePages"
+        [class.active]="currentPage === page">
+      <button class="page-link" (click)="loadNews(page)">{{ page }}</button>
+    </li>
+
+    <li class="page-item disabled" *ngIf="visiblePages[visiblePages.length - 1] < totalPages - 1">
+      <span class="page-link">...</span>
+    </li>
+
+    <li class="page-item" *ngIf="visiblePages[visiblePages.length - 1] < totalPages">
+      <button class="page-link" (click)="loadNews(totalPages)">{{ totalPages }}</button>
+    </li>
+
+    <li class="page-item" [class.disabled]="currentPage === totalPages">
+      <button class="page-link" (click)="loadNews(currentPage + 1)">»</button>
+    </li>
+
+  </ul>
+</nav>
+
+
         </div>
 
         <div class="col-lg-4">
