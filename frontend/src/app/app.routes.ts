@@ -5,6 +5,8 @@ import { DashboardComponent } from './components/admin/dashboard/dashboard';
 import { authGuard } from './guards/auth-guard';
 import { NewsDetailComponent } from './components/news-detail/news-detail';
 import { NewsListComponent } from './components/news-list/news-list';
+import { PrivacyComponent } from './components/privacy/privacy';
+import { CookiesComponent } from './components/cookies/cookies';
 
 export const routes: Routes = [
     // 1. Site açılınca direkt Anasayfaya git
@@ -22,6 +24,8 @@ export const routes: Routes = [
 
     { path: 'category/:name', component: NewsListComponent },
     { path: 'search', component: NewsListComponent },
+    { path: 'gizlilik-politikasi', component: PrivacyComponent },
+    { path: 'cerez-politikasi', component: CookiesComponent },
 
     { path: 'yazi/:id', loadComponent: () => import('./components/column-post-detail/column-post-detail').then(m => m.ColumnPostDetailComponent) },
 ];

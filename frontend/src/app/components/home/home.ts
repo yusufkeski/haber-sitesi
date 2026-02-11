@@ -4,6 +4,10 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NewsService } from '../../services/news';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subscription } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ToastrService } from 'ngx-toastr';
+import { PollService } from '../../services/poll.service';
+import { VideoService } from '../../services/video.service';
 
 @Component({
   selector: 'app-home',
@@ -22,8 +26,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   baseUrl = 'http://localhost:3000';
   headerAd: any = null;
   sidebarAds: any[] = [];
+
+  // Anket Değişkenleri
+  polls: any[] = [];
+  hasVoted: boolean = false;
+  totalVotes: number = 0;
+
+  // Video Değişkenleri
+  videos: any[] = [];
   
-  // SLIDER İÇİN YENİ DEĞİŞKENLER
+  // Slider Değişkenleri
   currentSlideIndex: number = 0;
   autoSlideInterval: any;
 
@@ -33,7 +45,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private newsService: NewsService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private pollService: PollService,
+    private videoService: VideoService,
+    private toastr: ToastrService,
+    public sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -46,6 +62,10 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    this.checkLocalVote();
+    this.loadPolls();
+    this.loadVideos();
   }
 
   ngOnDestroy() {
@@ -136,5 +156,72 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.autoSlideInterval) {
       clearInterval(this.autoSlideInterval);
     }
+  }
+
+  // --- ANKET FONKSİYONLARI ---
+  checkLocalVote() {
+    // Tarayıcı bazlı güvenlik: Daha önce oy kullandıysa formu kapat
+    if (localStorage.getItem('hasVoted')) {
+      this.hasVoted = true;
+    }
+  }
+
+  loadPolls() {
+    this.pollService.getPolls().subscribe({
+      next: (data) => {
+        this.polls = data;
+        this.calculateTotalVotes();
+      },
+      error: (err) => console.error('Anketler yüklenemedi', err)
+    });
+  }
+
+  calculateTotalVotes() {
+    this.totalVotes = this.polls.reduce((acc, poll) => acc + poll.vote_count, 0);
+  }
+
+  getPercentage(voteCount: number): number {
+    if (this.totalVotes === 0) return 0;
+    return Math.round((voteCount / this.totalVotes) * 100);
+  }
+
+  submitVote(optionId: number) {
+    if (this.hasVoted) {
+      this.toastr.warning('Zaten oy kullandınız!', 'Uyarı');
+      return;
+    }
+
+    this.pollService.vote(optionId).subscribe({
+      next: (res: any) => {
+        this.toastr.success(res.message, 'Başarılı');
+        localStorage.setItem('hasVoted', 'true');
+        this.hasVoted = true;
+        this.loadPolls(); // Oranları güncelle
+      },
+      error: (err) => {
+        if (err.status === 403) {
+          this.toastr.warning('Bu ağdan daha önce oy kullanılmış.', 'Uyarı');
+          localStorage.setItem('hasVoted', 'true'); // Backend yakaladıysa frontend'i de kilitle
+          this.hasVoted = true;
+        } else {
+          this.toastr.error('Bir hata oluştu.', 'Hata');
+        }
+      }
+    });
+  }
+
+  // --- VİDEO GALERİ FONKSİYONLARI ---
+  loadVideos() {
+    this.videoService.getVideos().subscribe({
+      next: (data) => {
+        // En son eklenen 3 videoyu anasayfada göster
+        this.videos = data.slice(0, 3); 
+      },
+      error: (err) => console.error('Videolar yüklenemedi', err)
+    });
+  }
+
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

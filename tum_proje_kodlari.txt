@@ -479,6 +479,7 @@ const newsRoutes = require('./routes/newsRoutes'); // <-- Artık bu dosyayı kul
 const contentController = require('./controllers/contentController');
 const userController = require('./controllers/userController');
 const checkAuth = require('./middleware/authMiddleware'); // Köşe yazıları için lazım
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -487,6 +488,7 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/dashboard', dashboardRoutes);
 
 // Resim klasörünü dışarı aç
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -746,6 +748,67 @@ exports.getColumnPostById = async (req, res) => {
 };
 
 ============================================================
+DOSYA YOLU: backend\controllers\dashboardController.js
+============================================================
+const db = require('../db');
+
+exports.getDashboardStats = async (req, res) => {
+    try {
+        // 1. GENEL SAYILAR (Kartlar için)
+        // Toplam Haber
+        const [newsCount] = await db.query('SELECT COUNT(*) as total FROM news');
+        // Toplam Okunma (Tüm haberlerin view_count toplamı)
+        const [viewsCount] = await db.query('SELECT SUM(view_count) as total FROM news');
+        // Toplam Personel
+        const [usersCount] = await db.query('SELECT COUNT(*) as total FROM users');
+
+        // 2. EDİTÖR PERFORMANSI (Pasta Grafik)
+        // Hangi yazar kaç haber girmiş?
+        const sqlAuthorPerf = `
+            SELECT u.full_name, COUNT(n.id) as news_count 
+            FROM users u 
+            LEFT JOIN news n ON u.id = n.author_id 
+            GROUP BY u.id 
+            HAVING news_count > 0
+        `;
+        const [authorStats] = await db.query(sqlAuthorPerf);
+
+        // 3. EN ÇOK OKUNAN 5 HABER (Bar Grafik veya Liste)
+        const sqlTopNews = `
+            SELECT title, view_count 
+            FROM news 
+            ORDER BY view_count DESC 
+            LIMIT 5
+        `;
+        const [topNews] = await db.query(sqlTopNews);
+
+        // 4. SON 7 GÜNDE EKLENEN HABERLERİN PERFORMANSI (Bar Grafik)
+        // Tarihe göre değil, habere göre getireceğiz.
+        const sqlLast7Days = `
+            SELECT title, view_count, DATE_FORMAT(created_at, '%d.%m') as short_date
+            FROM news 
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ORDER BY created_at ASC
+        `;
+        const [last7Days] = await db.query(sqlLast7Days);
+
+        // Hepsini paketleyip gönder
+        res.json({
+            totalNews: newsCount[0].total,
+            totalViews: viewsCount[0].total || 0, // Hiç okunma yoksa 0 dönsün
+            totalUsers: usersCount[0].total,
+            authorStats: authorStats,
+            topNews: topNews,
+            last7Days: last7Days
+        });
+
+    } catch (err) {
+        console.error("Dashboard İstatistik Hatası:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+============================================================
 DOSYA YOLU: backend\controllers\newsController.js
 ============================================================
 const db = require('../db');
@@ -832,17 +895,30 @@ exports.searchNews = async (req, res) => {
     }
 };
 
-// 4. Tek Haber Getir
+// 4. Tek Haber Getir (Yazar Bilgisiyle Birlikte)
 exports.getNewsBySlug = async (req, res) => {
     try {
+        const slug = req.params.slug;
+
+        // 1. Önce okunma sayısını artır
+        await db.query('UPDATE news SET view_count = view_count + 1 WHERE slug = ?', [slug]);
+
+        // 2. Haberi çekerken USERS tablosuyla birleştir (JOIN)
+        // u.full_name -> author_name olarak, u.image_path -> author_image olarak gelecek
         const sql = `
-            SELECT n.*, c.name as category 
+            SELECT n.*, 
+                   c.name as category_name,
+                   u.full_name as author_name,
+                   u.image_path as author_image
             FROM news n 
             LEFT JOIN categories c ON n.category_id = c.id 
+            LEFT JOIN users u ON n.author_id = u.id 
             WHERE n.slug = ?
         `;
-        const [rows] = await db.query(sql, [req.params.slug]);
+        const [rows] = await db.query(sql, [slug]);
+
         if (rows.length === 0) return res.status(404).json({ message: 'Haber bulunamadı' });
+        
         res.json(rows[0]);
     } catch (err) {
         console.error("Haber Detay Hatası:", err);
@@ -850,24 +926,25 @@ exports.getNewsBySlug = async (req, res) => {
     }
 };
 
-// 5. Haber Ekle (category_id kullanarak)
+// 5. Haber Ekle (Yazar ID'sini Kaydederek)
 exports.addNews = async (req, res) => {
     try {
-        // Frontend'den artık 'category_id' gelmeli (Dropdown value=1,2,3 gibi)
-        // Eğer frontend hala isim gönderiyorsa (value="GÜNDEM"), burada önce ID'sini bulmalıyız.
-        // Şimdilik sistemin ID gönderdiğini varsayıyoruz (value="1").
         const { title, content, category_id, is_slider, is_breaking } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
         
+        // Giriş yapan kullanıcının ID'sini al (Auth middleware sayesinde req.user.id dolu gelir)
+        const authorId = req.user ? req.user.id : null; 
+
         const slug = title.toLowerCase()
             .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
             .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
             .replace(/[^a-z0-9-]/g, '-')
             .replace(/-+/g, '-');
 
-        // category DEĞİL category_id sütununa yazıyoruz
-        const sql = `INSERT INTO news (title, slug, content, category_id, image_path, is_slider, is_breaking) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        await db.query(sql, [title, slug, content, category_id, imagePath, is_slider === 'true', is_breaking === 'true']);
+        // author_id alanını da ekledik
+        const sql = `INSERT INTO news (title, slug, content, category_id, image_path, is_slider, is_breaking, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        
+        await db.query(sql, [title, slug, content, category_id, imagePath, is_slider === 'true', is_breaking === 'true', authorId]);
         
         res.json({ message: 'Haber eklendi' });
     } catch (err) {
@@ -4767,6 +4844,19 @@ router.post('/login', authController.login);
 module.exports = router;
 
 ============================================================
+DOSYA YOLU: backend\routes\dashboardRoutes.js
+============================================================
+const express = require('express');
+const router = express.Router();
+const dashboardController = require('../controllers/dashboardController');
+const checkAuth = require('../middleware/authMiddleware');
+
+// İstatistikleri çek (Sadece giriş yapmış kullanıcılar görebilir)
+router.get('/stats', checkAuth, dashboardController.getDashboardStats);
+
+module.exports = router;
+
+============================================================
 DOSYA YOLU: backend\routes\newsRoutes.js
 ============================================================
 const express = require('express');
@@ -5090,9 +5180,11 @@ DOSYA YOLU: frontend\package.json
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.1",
     "cropperjs": "^1.5.13",
     "express": "^5.1.0",
     "font-awesome": "^4.7.0",
+    "ng2-charts": "^8.0.0",
     "ngx-quill": "^26.0.0",
     "ngx-toastr": "^20.0.5",
     "quill": "^2.0.2",
@@ -5325,6 +5417,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import { registerLocaleData } from '@angular/common';
 import localeTr from '@angular/common/locales/tr';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 registerLocaleData(localeTr);
 
@@ -5338,7 +5431,8 @@ export const appConfig: ApplicationConfig = {
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
     }),
-    { provide: LOCALE_ID, useValue: 'tr-TR' }
+    { provide: LOCALE_ID, useValue: 'tr-TR' },
+    provideCharts(withDefaultRegisterables())
   ]
 };
 
@@ -5352,24 +5446,29 @@ DOSYA YOLU: frontend\src\app\app.html
 ============================================================
 <div *ngIf="!isAdminPage && !isLoginPage">
     
-    <div class="top-bar py-2 d-none d-md-block bg-dark text-white">
+    <div class="top-bar py-1 bg-dark text-white border-bottom border-secondary">
         <div class="container d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3 small">
+            
+            <div class="d-flex align-items-center gap-3 small" style="font-size: 0.85rem;">
                 <span class="opacity-75">
-                    <i class="far fa-calendar-alt me-2"></i>
-                    {{ today | date:'d MMMM yyyy EEEE':'':'tr-TR' }}
+                    <i class="far fa-calendar-alt me-1"></i>
+                    <span class="d-md-none">{{ today | date:'d MMM' }}</span> 
+                    <span class="d-none d-md-inline">{{ today | date:'d MMMM yyyy' }}</span>
                 </span>
+                
                 <span class="opacity-25">|</span>
+                
                 <span class="fw-bold text-warning d-flex align-items-center" *ngIf="weather$ | async as w">
-                    <i class="fas me-2" [ngClass]="w.icon"></i> Vezirköprü {{ w.temp }}°C
+                    <i class="fas me-1" [ngClass]="w.icon"></i> 
+                    <span class="d-none d-sm-inline">Vezirköprü</span> {{ w.temp }}°C
                 </span>
             </div>
             
-            <div class="d-flex gap-2">
-                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fa-brands fa-x-twitter"></i></a>
-                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="btn btn-sm btn-outline-light border-0"><i class="fab fa-youtube"></i></a>
+            <div class="d-none d-md-flex gap-2">
+                <a href="#" class="text-white-50 hover-white"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-white-50 hover-white"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#" class="text-white-50 hover-white"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white-50 hover-white"><i class="fab fa-youtube"></i></a>
             </div>
         </div>
     </div>
@@ -5377,13 +5476,15 @@ DOSYA YOLU: frontend\src\app\app.html
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm py-3">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3 d-flex align-items-center" routerLink="/">
-                <span class="bg-white text-primary rounded px-2 me-2">N</span>ERİK
+                <span class="bg-white text-primary rounded px-2 me-2 shadow-sm">N</span>ERİK
             </a>
+            
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-bold text-uppercase gap-3">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-bold text-uppercase gap-3 mt-3 mt-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">ANASAYFA</a>
                     </li>
@@ -5401,7 +5502,7 @@ DOSYA YOLU: frontend\src\app\app.html
                     </li>
                 </ul>
                 
-                <div class="d-flex position-relative" style="max-width: 250px;">
+                <div class="d-flex position-relative mt-3 mt-lg-0" style="max-width: 250px;">
                     <input #searchInput 
                            class="form-control rounded-pill pe-5 border-0 bg-white bg-opacity-25 text-white placeholder-white" 
                            type="search" 
@@ -5412,6 +5513,14 @@ DOSYA YOLU: frontend\src\app\app.html
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
+
+                <div class="d-flex d-md-none justify-content-center gap-4 mt-4 border-top border-white-50 pt-3">
+                    <a href="#" class="text-white fs-4"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white fs-4"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" class="text-white fs-4"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white fs-4"><i class="fab fa-youtube"></i></a>
+                </div>
+
             </div>
         </div>
     </nav>
@@ -5449,10 +5558,8 @@ DOSYA YOLU: frontend\src\app\app.html
             <div class="col-lg-3 col-6">
                 <h6 class="fw-bold mb-3 text-uppercase text-primary">Kurumsal</h6>
                 <ul class="list-unstyled d-flex flex-column gap-2">
-                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Künye</a></li>
-                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>İletişim</a></li>
-                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Gizlilik Politikası</a></li>
-                    <li><a href="#" class="text-white-50 text-decoration-none hover-white"><i class="fas fa-angle-right me-2"></i>Çerez Politikası</a></li>
+                    <li><a routerLink="/gizlilik-politikasi" class="text-white-50 text-decoration-none hover-white cursor-pointer"><i class="fas fa-angle-right me-2"></i>Gizlilik Politikası</a></li>
+                    <li><a routerLink="/cerez-politikasi" class="text-white-50 text-decoration-none hover-white cursor-pointer"><i class="fas fa-angle-right me-2"></i>Çerez Politikası</a></li>
                 </ul>
             </div>
             
@@ -5489,6 +5596,8 @@ import { DashboardComponent } from './components/admin/dashboard/dashboard';
 import { authGuard } from './guards/auth-guard';
 import { NewsDetailComponent } from './components/news-detail/news-detail';
 import { NewsListComponent } from './components/news-list/news-list';
+import { PrivacyComponent } from './components/privacy/privacy';
+import { CookiesComponent } from './components/cookies/cookies';
 
 export const routes: Routes = [
     // 1. Site açılınca direkt Anasayfaya git
@@ -5506,6 +5615,8 @@ export const routes: Routes = [
 
     { path: 'category/:name', component: NewsListComponent },
     { path: 'search', component: NewsListComponent },
+    { path: 'gizlilik-politikasi', component: PrivacyComponent },
+    { path: 'cerez-politikasi', component: CookiesComponent },
 
     { path: 'yazi/:id', loadComponent: () => import('./components/column-post-detail/column-post-detail').then(m => m.ColumnPostDetailComponent) },
 ];
@@ -5553,8 +5664,8 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterModule, FormsModule],
-  templateUrl: './app.html', // <-- DİKKAT: 'app.component.html' DEĞİL
-  styleUrls: ['./app.css']   // <-- DİKKAT: 'app.component.css' DEĞİL
+  templateUrl: './app.html', 
+  styleUrls: ['./app.css']
 })
 export class AppComponent implements OnInit {
   today: Date = new Date();
@@ -5568,15 +5679,19 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         const url = event.urlAfterRedirects;
+        // Admin veya Login sayfasındaysak Header/Footer gizlensin
         this.isAdminPage = url.includes('/admin');
         this.isLoginPage = url.includes('/login');
+        
+        // Sayfa değişince en üste kaydır
         window.scrollTo(0, 0);
       }
     });
 
     this.today = new Date();
-    // Hava durumu API
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=41.1436&longitude=35.4552&current_weather=true&t=${Date.now()}`;
+    
+    // Hava durumu API (Samsun Koordinatları)
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=41.2867&longitude=36.33&current_weather=true&t=${Date.now()}`;
     
     this.weather$ = this.http.get(weatherUrl).pipe(
       map((res: any) => {
@@ -5713,350 +5828,305 @@ table img {
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.html
 ============================================================
 <div class="admin-wrapper d-flex">
-    <div class="sidebar" id="sidebar">
+    
+    <div class="sidebar bg-dark text-white min-vh-100 d-flex flex-column" id="sidebar" style="width: 280px; position: fixed; top:0; left:0; bottom:0; overflow-y: auto; z-index: 1000;">
         <div class="sidebar-brand text-center py-4 border-bottom border-secondary">
-            <span class="text-primary fw-bold fs-4">N</span><span class="text-white fw-bold fs-4">ERİK</span>
-            <small class="d-block text-muted" style="font-size: 0.7rem;">YÖNETİM PANELİ</small>
+            <span class="text-primary fw-bold fs-3">N</span><span class="text-white fw-bold fs-3">ERİK</span>
+            <small class="d-block text-white-50 mt-1" style="font-size: 0.75rem; letter-spacing: 2px;">YÖNETİM PANELİ</small>
         </div>
         
-        <nav class="mt-4 px-2 d-flex flex-column gap-1">
+        <nav class="mt-4 px-3 d-flex flex-column gap-2 flex-grow-1">
             
-            <a *ngIf="checkPermission('news')" 
-               (click)="switchTab('news')" 
-               [class.active]="activeTab === 'news'" 
-               class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;">
-               <i class="fas fa-newspaper me-3 text-primary"></i> Haberler
+            <a (click)="switchTab('overview')" 
+               [class.active]="activeTab === 'overview'" 
+               [class.bg-primary]="activeTab === 'overview'"
+               class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center" style="cursor: pointer; transition: 0.3s;">
+               <i class="fas fa-chart-pie me-3 fa-lg" style="width: 25px;"></i> 
+               <span class="fw-bold">Genel Bakış</span>
             </a>
 
-            <a *ngIf="checkPermission('slider')"
-               (click)="switchTab('slider')" 
-               [class.active]="activeTab === 'slider'" 
-               class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;">
-               <i class="fas fa-images me-3 text-warning"></i> Manşetler
+            <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">İÇERİK YÖNETİMİ</div>
+
+            <a *ngIf="checkPermission('news')" (click)="switchTab('news')" [class.active]="activeTab === 'news'" [class.bg-secondary]="activeTab === 'news'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fas fa-newspaper me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Haberler</span>
             </a>
 
-            <a *ngIf="checkPermission('breaking')"
-               (click)="switchTab('breaking')" 
-               [class.active]="activeTab === 'breaking'" 
-               class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;">
-               <i class="fas fa-bolt me-3 text-danger"></i> Son Dakika
+            <a *ngIf="checkPermission('slider')" (click)="switchTab('slider')" [class.active]="activeTab === 'slider'" [class.bg-warning]="activeTab === 'slider'" [class.text-dark]="activeTab === 'slider'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fas fa-images me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Manşet Yönetimi</span>
             </a>
 
-            <a *ngIf="checkPermission('videos')"
-               (click)="switchTab('videos')" 
-               [class.active]="activeTab === 'videos'" 
-               class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;">
-               <i class="fab fa-youtube me-3 text-danger"></i> Video Galeri
+            <a *ngIf="checkPermission('breaking')" (click)="switchTab('breaking')" [class.active]="activeTab === 'breaking'" [class.bg-danger]="activeTab === 'breaking'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fas fa-bolt me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Son Dakika</span>
             </a>
 
-            <a *ngIf="checkPermission('ads')"
-               (click)="switchTab('ads')" 
-               [class.active]="activeTab === 'ads'" 
-               class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;">
-               <i class="fas fa-ad me-3 text-success"></i> Reklamlar
-            </a>
-            
-            <a *ngIf="checkPermission('columnists')" 
-               (click)="switchTab('columnists')" 
-               [class.active]="activeTab === 'columnists'" 
-               class="nav-link rounded p-3 text-white-50 hover-text-white" 
-               style="cursor: pointer;">
-               <i class="fas fa-pen-nib me-3 text-info"></i> Köşe Yazıları
+            <a *ngIf="checkPermission('columnists')" (click)="switchTab('columnists')" [class.active]="activeTab === 'columnists'" [class.bg-info]="activeTab === 'columnists'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fas fa-pen-nib me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Köşe Yazıları</span>
             </a>
 
-            <a *ngIf="checkPermission('personnel')" 
-            (click)="switchTab('personnel')" 
-            [class.active]="activeTab === 'personnel'" 
-            class="nav-link rounded p-3 text-white-50 hover-text-white" style="cursor: pointer;">
-                <i class="fas fa-users-cog me-3 text-light"></i> Personel Yönetimi
+            <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">MEDYA & REKLAM</div>
+
+            <a *ngIf="checkPermission('videos')" (click)="switchTab('videos')" [class.active]="activeTab === 'videos'" [class.bg-danger]="activeTab === 'videos'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fab fa-youtube me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Video Galeri</span>
             </a>
 
-            <hr class="border-secondary my-3">
-            <a routerLink="/" class="nav-link rounded p-3 text-info" style="cursor: pointer;"><i class="fas fa-external-link-alt me-3"></i> Siteyi Gör</a>
-            <a (click)="onLogout()" class="nav-link rounded p-3 text-danger mt-2" style="cursor: pointer;"><i class="fas fa-sign-out-alt me-3"></i> Güvenli Çıkış</a>
+            <a *ngIf="checkPermission('ads')" (click)="switchTab('ads')" [class.active]="activeTab === 'ads'" [class.bg-success]="activeTab === 'ads'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fas fa-ad me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Reklamlar</span>
+            </a>
+
+            <div class="text-white-50 small fw-bold mt-3 mb-2 px-2">SİSTEM</div>
+
+            <a *ngIf="checkPermission('personnel')" (click)="switchTab('personnel')" [class.active]="activeTab === 'personnel'" [class.bg-light]="activeTab === 'personnel'" [class.text-dark]="activeTab === 'personnel'" class="nav-link rounded p-3 text-white-50 hover-text-white d-flex align-items-center cursor-pointer">
+               <i class="fas fa-users-cog me-3 fa-lg" style="width: 25px;"></i> <span class="fw-bold">Personel</span>
+            </a>
+
+            <div class="mt-auto mb-4">
+                <hr class="border-secondary my-3">
+                <a routerLink="/" class="nav-link rounded p-3 text-info hover-text-white d-flex align-items-center cursor-pointer">
+                    <i class="fas fa-external-link-alt me-3"></i> Siteyi Gör
+                </a>
+                <a (click)="onLogout()" class="nav-link rounded p-3 text-danger hover-text-white d-flex align-items-center cursor-pointer">
+                    <i class="fas fa-sign-out-alt me-3"></i> Çıkış Yap
+                </a>
+            </div>
         </nav>
     </div>
 
-    <div class="main-content flex-grow-1 bg-light">
-        <div class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 rounded-4 shadow-sm">
-            <h4 class="fw-bold text-dark mb-0 text-uppercase">{{ activeTab }} YÖNETİMİ</h4>
-            <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Admin' }}</small>
-        </div>
-
-        <div *ngIf="activeTab === 'news'" class="fade-in">
-            <div class="mb-4" *ngIf="!showForm">
-                <button class="btn btn-primary px-4 py-3 fw-bold shadow-sm rounded-3 hover-scale" (click)="showForm = true">
-                    <i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle
-                </button>
+    <div class="main-content flex-grow-1 bg-light min-vh-100" style="margin-left: 280px;">
+        
+        <div class="sticky-top bg-white shadow-sm p-4 d-flex justify-content-between align-items-center mb-4" style="z-index: 900;">
+            <div>
+                <h4 class="fw-bold text-dark mb-0 text-uppercase ls-1">
+                    {{ activeTab === 'overview' ? 'SİTE ÖZETİ' : activeTab + ' YÖNETİMİ' }}
+                </h4>
+                <small class="text-muted">Hoş geldin, {{ currentUser?.full_name || 'Admin' }}</small>
             </div>
-
-            <div class="card border-0 shadow-sm p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showForm">
-                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-edit me-2"></i> {{ isEditing ? 'Haberi Düzenle' : 'Yeni Haber' }}</h5>
-                    <button class="btn-close" (click)="resetForm()"></button>
+            <div class="d-flex align-items-center gap-3">
+                <img *ngIf="currentUser?.image_path" [src]="baseUrl + currentUser.image_path" class="rounded-circle border" width="45" height="45" style="object-fit: cover;">
+                <div *ngIf="!currentUser?.image_path" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 45px; height: 45px;">
+                    {{ currentUser?.full_name?.charAt(0) || 'A' }}
                 </div>
-                <div class="row g-4">
-                    <div class="col-lg-8">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-secondary">BAŞLIK</label>
-                            <input type="text" [(ngModel)]="newsData.title" class="form-control form-control-lg fw-bold">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-secondary">İÇERİK (Editör)</label>
-                            <div class="bg-white border rounded-3 overflow-hidden">
-                                <quill-editor [(ngModel)]="newsData.content" [styles]="{height: '350px'}"></quill-editor>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card bg-light border-0 p-4 rounded-4 h-100">
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-secondary">KATEGORİ</label>
-                                <select [(ngModel)]="newsData.category" class="form-select form-select-lg">
-                                    <option value="GÜNDEM">GÜNDEM</option>
-                                    <option value="EKONOMİ">EKONOMİ</option>
-                                    <option value="SPOR">SPOR</option>
-                                    <option value="TEKNOLOJİ">TEKNOLOJİ</option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-secondary">GÖRSEL (Kırpma)</label>
-                                <input type="file" #fileInput (change)="onFileSelected($event)" class="d-none" accept="image/*">
-                                <div class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer" (click)="fileInput.click()">
-                                    <div *ngIf="!selectedFile && !newsData.image">
-                                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                                        <h6 class="fw-bold text-dark">Resim Seç</h6>
-                                    </div>
-                                    <div [class.d-none]="!selectedFile && !newsData.image">
-                                        <img #imageElement class="img-fluid rounded">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-grid gap-2 mt-auto">
-                                <button (click)="saveNews()" class="btn btn-primary fw-bold py-3">{{ isEditing ? 'GÜNCELLE' : 'YAYINLA' }}</button>
-                                <button (click)="resetForm()" class="btn btn-outline-secondary">VAZGEÇ</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-muted small text-uppercase">
-                        <tr><th class="ps-4 py-3">Görsel</th><th>Başlık</th><th>Kategori</th><th class="text-end pe-4">İşlemler</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let news of newsList">
-                            <td class="ps-4"><img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="rounded shadow-sm" width="60"></td>
-                            <td class="fw-bold">{{ news.title }}</td>
-                            <td><span class="badge bg-primary-subtle text-primary">{{ news.category_name }}</span></td>
-                            <td class="text-end pe-4">
-                                <button (click)="editItem(news, 'news')" class="btn btn-sm btn-light text-warning me-2"><i class="fas fa-edit"></i></button>
-                                <button (click)="deleteItem(news.id, 'news')" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
 
-        <div *ngIf="activeTab === 'columnists'" class="fade-in">
-            <div class="mb-4" *ngIf="!showForm">
-                <button class="btn btn-info text-white px-4 py-3 fw-bold shadow-sm rounded-3 hover-scale" (click)="showForm = true">
-                    <i class="fas fa-plus-circle me-2"></i> YENİ YAZI YAZ
-                </button>
-            </div>
+        <div class="container-fluid px-4 pb-5">
 
-            <div *ngIf="showForm" class="card border-0 shadow-sm p-4 mb-4 rounded-4 bg-white fade-in">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-info">
-                        <img *ngIf="currentUser.image_path" [src]="baseUrl + currentUser.image_path" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
-                        {{ currentUser.full_name }} Olarak Yazıyorsunuz
-                    </h5>
-                    <button class="btn-close" (click)="resetForm()"></button>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="fw-bold small text-muted">BAŞLIK</label>
-                        <input [(ngModel)]="postData.title" class="form-control form-control-lg fw-bold" placeholder="Yazı Başlığı...">
-                    </div>
-                    <div class="col-12">
-                        <label class="fw-bold small text-muted">İÇERİK</label>
-                        <div class="bg-white border rounded overflow-hidden">
-                            <quill-editor [(ngModel)]="postData.content" [styles]="{height: '400px'}"></quill-editor>
-                        </div>
-                    </div>
-                    <div class="col-12 text-end">
-                        <button (click)="saveColumnPost()" class="btn btn-info text-white btn-lg fw-bold px-5">YAYINLA</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mt-4" *ngIf="!showForm">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h6 class="fw-bold m-0 text-secondary">YAYINDAKİ KÖŞE YAZILARI</h6>
-                </div>
+            <div *ngIf="activeTab === 'overview'" class="fade-in">
                 
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-muted small">
-                        <tr>
-                            <th class="ps-4">YAZAR</th>
-                            <th>BAŞLIK</th>
-                            <th>TARİH</th>
-                            <th class="text-end pe-4">İŞLEM</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let post of columnPostList">
-                            <td class="ps-4">
-                                <div class="d-flex align-items-center gap-3">
-                                    <img *ngIf="post.author_image" [src]="baseUrl + post.author_image" 
-                                         class="rounded-circle shadow-sm" width="40" height="40" style="object-fit: cover;">
-                                    
-                                    <div *ngIf="!post.author_image" 
-                                         class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" 
-                                         style="width: 40px; height: 40px;">
-                                        {{ post.author_name?.charAt(0) }}
-                                    </div>
-                                    
-                                    <span class="fw-bold text-dark">{{ post.author_name }}</span>
+                <div class="row g-4 mb-5" *ngIf="stats">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <div class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-primary">
+                                <div>
+                                    <h6 class="text-muted text-uppercase fw-bold mb-1">Toplam Haber</h6>
+                                    <h2 class="fw-bold text-dark m-0">{{ stats.totalNews }}</h2>
                                 </div>
-                            </td>
-                            <td class="fw-bold text-secondary">{{ post.title }}</td>
-                            <td class="small text-muted">{{ post.created_at | date:'dd.MM.yyyy' }}</td>
-                            <td class="text-end pe-4">
-                                <button (click)="deleteColumnPost(post.id)" class="btn btn-sm btn-light text-danger border shadow-sm">
-                                    <i class="fas fa-trash"></i> Sil
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div *ngIf="columnPostList.length === 0" class="text-center py-5 text-muted bg-light">
-                    <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
-                    <p class="mb-0">Henüz hiç köşe yazısı eklenmemiş.</p>
-                </div>
-            </div>
-        </div>
-
-        <div *ngIf="activeTab === 'slider' || activeTab === 'breaking'" class="fade-in">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card p-3 border-warning border-top border-3 h-100">
-                        <h6 class="fw-bold text-warning mb-3">YAYINDAKİLER</h6>
-                        <table class="table"><tr *ngFor="let news of (activeTab === 'slider' ? activeSliderNews : activeBreakingNews)"><td><img [src]="baseUrl + news.image_path" width="40"></td><td class="small">{{ news.title }}</td><td>
-                            <button class="btn btn-sm" 
-            [ngClass]="news.is_slider ? 'btn-success' : 'btn-secondary'"
-            (click)="toggleStatus(news, 'is_slider')"> <i class="fas" [ngClass]="news.is_slider ? 'fa-check' : 'fa-times'"></i>
-    </button>
-                        </td></tr></table>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card p-3 border-success border-top border-3 h-100 bg-light">
-                        <h6 class="fw-bold text-success mb-3">EKLE</h6>
-                        <table class="table"><tr *ngFor="let news of candidateNews"><td class="small">{{ news.title }}</td><td>
-                            <button class="btn btn-sm" 
-            [ngClass]="news.is_breaking ? 'btn-danger' : 'btn-secondary'"
-            (click)="toggleStatus(news, 'is_breaking')"> <i class="fas" [ngClass]="news.is_breaking ? 'fa-check' : 'fa-times'"></i>
-    </button>
-                        </td></tr></table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div *ngIf="activeTab === 'videos'" class="fade-in">
-            <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-5"><input [(ngModel)]="videoData.title" class="form-control" placeholder="Video Başlığı"></div><div class="col-md-5"><input [(ngModel)]="videoData.url" class="form-control" placeholder="YouTube Linki"></div><div class="col-md-2"><button (click)="saveVideo()" class="btn btn-danger w-100">Ekle</button></div></div></div>
-            <div class="row g-3"><div *ngFor="let v of videoList" class="col-md-4"><div class="card h-100 shadow-sm border-0"><iframe [src]="sanitizer.bypassSecurityTrustResourceUrl(v.url)" height="200" frameborder="0" allowfullscreen></iframe><div class="card-body d-flex justify-content-between"><span class="small fw-bold">{{ v.title }}</span><button (click)="deleteItem(v.id, 'videos')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></div></div></div></div>
-        </div>
-
-        <div *ngIf="activeTab === 'ads'" class="fade-in">
-            <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-3"><input [(ngModel)]="adData.title" class="form-control" placeholder="Reklam Adı"></div><div class="col-md-3"><input [(ngModel)]="adData.target_url" class="form-control" placeholder="URL"></div><div class="col-md-2"><select [(ngModel)]="adData.area" class="form-select"><option value="sidebar">Sidebar</option><option value="header">Header</option></select></div><div class="col-md-2"><input type="file" id="adFile" class="form-control"></div><div class="col-md-2"><button (click)="saveAd()" class="btn btn-success w-100">Ekle</button></div></div></div>
-            <div class="row g-3"><div *ngFor="let ad of adList" class="col-md-3"><div class="card h-100"><img [src]="baseUrl + ad.image_path" class="card-img-top" style="height: 100px; object-fit: contain;"><div class="card-body"><p class="small fw-bold m-0">{{ ad.title }}</p><button (click)="deleteItem(ad.id, 'ads')" class="btn btn-sm btn-danger float-end"><i class="fas fa-trash"></i></button></div></div></div></div>
-        </div>
-
-        <div *ngIf="activeTab === 'personnel'" class="fade-in">
-
-    <div class="mb-4" *ngIf="!showForm">
-        <button class="btn btn-dark text-white px-4 py-3 fw-bold shadow-sm rounded-3" (click)="showForm = true">
-            <i class="fas fa-user-plus me-2"></i> YENİ PERSONEL EKLE
-        </button>
-    </div>
-
-    <div *ngIf="showForm" class="card border-0 shadow-sm p-4 mb-4 rounded-4 bg-white fade-in">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-dark">{{ isEditing ? 'Personeli Düzenle' : 'Yeni Personel' }}</h5>
-            <button class="btn-close" (click)="resetForm()"></button>
-        </div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="small fw-bold text-muted">Kullanıcı Adı</label>
-                <input [(ngModel)]="userData.username" class="form-control" placeholder="Örn: ahmet123">
-            </div>
-            <div class="col-md-6">
-                <label class="small fw-bold text-muted">Şifre {{ isEditing ? '(Değişmeyecekse boş bırak)' : '' }}</label>
-                <input [(ngModel)]="userData.password" type="password" class="form-control" placeholder="******">
-            </div>
-            <div class="col-md-6">
-                <label class="small fw-bold text-muted">Ad Soyad</label>
-                <input [(ngModel)]="userData.full_name" class="form-control" placeholder="Ad Soyad">
-            </div>
-            <div class="col-md-6">
-                <label class="small fw-bold text-muted">Yetki (Rol)</label>
-                <select [(ngModel)]="userData.role" class="form-select">
-                    <option value="author">Yazar (Sadece Köşe Yazısı)</option>
-                    <option value="editor">Editör (Haber Yönetimi)</option>
-                    <option value="admin">Yönetici (Tam Yetki)</option>
-                </select>
-            </div>
-            <div class="col-12">
-                <label class="small fw-bold text-muted">Profil Resmi</label>
-                <input type="file" #userFile (change)="onFileSelected($event)" class="form-control" accept="image/*">
-                <div class="mt-2 text-center" *ngIf="selectedFile || (isEditing && userData.image)">
-                    <img #imageElement class="rounded-circle border" width="100" height="100" style="object-fit: cover;">
-                </div>
-            </div>
-            <div class="col-12 text-end">
-                <button (click)="saveUser()" class="btn btn-dark fw-bold px-5">{{ isEditing ? 'GÜNCELLE' : 'KAYDET' }}</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" *ngIf="!showForm">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light text-muted small">
-                <tr><th>Personel</th><th>Kullanıcı Adı</th><th>Yetki</th><th class="text-end pe-4">İşlem</th></tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let user of userList">
-                    <td class="ps-4">
-                        <div class="d-flex align-items-center gap-2">
-                            <img *ngIf="user.image_path" [src]="baseUrl + user.image_path" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
-                            <div *ngIf="!user.image_path" class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">{{ user.full_name.charAt(0) }}</div>
-                            <span class="fw-bold">{{ user.full_name }}</span>
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-newspaper fa-2x"></i>
+                                </div>
+                            </div>
                         </div>
-                    </td>
-                    <td>{{ user.username }}</td>
-                    <td>
-                        <span class="badge" [ngClass]="{'bg-danger': user.role==='admin', 'bg-warning': user.role==='editor', 'bg-info': user.role==='author'}">
-                            {{ user.role | uppercase }}
-                        </span>
-                    </td>
-                    <td class="text-end pe-4">
-                        <button (click)="editUser(user)" class="btn btn-sm btn-light text-primary me-2"><i class="fas fa-edit"></i></button>
-                        <button (click)="deleteUser(user.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <div class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-success">
+                                <div>
+                                    <h6 class="text-muted text-uppercase fw-bold mb-1">Toplam Okunma</h6>
+                                    <h2 class="fw-bold text-dark m-0">{{ stats.totalViews | number }}</h2>
+                                </div>
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-eye fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <div class="card-body p-4 d-flex align-items-center justify-content-between bg-white border-start border-5 border-warning">
+                                <div>
+                                    <h6 class="text-muted text-uppercase fw-bold mb-1">Kayıtlı Personel</h6>
+                                    <h2 class="fw-bold text-dark m-0">{{ stats.totalUsers }}</h2>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 border-bottom">
+                                <h6 class="fw-bold m-0 text-dark"><i class="fas fa-chart-pie me-2 text-primary"></i> Editör Performansı (Haber Sayısı)</h6>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <canvas baseChart
+                                        [data]="pieChartData"
+                                        [options]="pieChartOptions"
+                                        [type]="'pie'">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 border-bottom">
+                                <h6 class="fw-bold m-0 text-dark"><i class="fas fa-chart-bar me-2 text-success"></i> En Çok Okunan 5 Haber</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas baseChart
+                                        [data]="barChartData"
+                                        [options]="barChartOptions"
+                                        [type]="'bar'">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                                <h6 class="fw-bold m-0 text-dark">
+                                    <i class="fas fa-calendar-week me-2 text-primary"></i> Son 7 Günde Eklenen Haberlerin Performansı
+                                </h6>
+                            </div>
+                            <div class="card-body p-4">
+                                <div style="height: 350px; width: 100%;">
+                                    <canvas baseChart
+                                            [data]="recentNewsData"
+                                            [options]="recentNewsOptions"
+                                            [type]="'bar'">
+                                    </canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div *ngIf="activeTab === 'news'" class="fade-in">
+                <div class="mb-4" *ngIf="!showForm">
+                    <button class="btn btn-primary px-4 py-3 fw-bold shadow hover-scale rounded-pill" (click)="showForm = true"><i class="fas fa-plus-circle me-2"></i> Yeni Haber Ekle</button>
+                </div>
+
+                <div class="card border-0 shadow p-4 mb-5 rounded-4 bg-white fade-in" *ngIf="showForm">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h5 class="fw-bold mb-0 text-primary">{{ isEditing ? 'Haberi Düzenle' : 'Yeni Haber' }}</h5>
+                        <button class="btn-close" (click)="resetForm()"></button>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="mb-4"><label class="form-label fw-bold small text-secondary">BAŞLIK</label><input type="text" [(ngModel)]="newsData.title" class="form-control form-control-lg fw-bold"></div>
+                            <div class="mb-3"><label class="form-label fw-bold small text-secondary">İÇERİK</label><div class="bg-white border rounded-3 overflow-hidden"><quill-editor [(ngModel)]="newsData.content" [styles]="{height: '350px'}"></quill-editor></div></div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card bg-light border-0 p-4 rounded-4 h-100">
+                                <div class="mb-4"><label class="form-label fw-bold small text-secondary">KATEGORİ</label><select [(ngModel)]="newsData.category" class="form-select form-select-lg"><option value="GÜNDEM">GÜNDEM</option><option value="EKONOMİ">EKONOMİ</option><option value="SPOR">SPOR</option><option value="TEKNOLOJİ">TEKNOLOJİ</option></select></div>
+                                <div class="mb-4"><label class="form-label fw-bold small text-secondary">GÖRSEL</label><input type="file" #fileInput (change)="onFileSelected($event)" class="d-none" accept="image/*"><div class="image-upload-box bg-white border border-2 border-dashed rounded-4 p-4 text-center cursor-pointer" (click)="fileInput.click()"><div *ngIf="!selectedFile && !newsData.image"><i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i><h6>Resim Seç</h6></div><div [class.d-none]="!selectedFile && !newsData.image"><img #imageElement class="img-fluid rounded"></div></div></div>
+                                <div class="d-grid gap-2 mt-auto"><button (click)="saveNews()" class="btn btn-primary fw-bold py-3">{{ isEditing ? 'GÜNCELLE' : 'YAYINLA' }}</button><button (click)="resetForm()" class="btn btn-outline-secondary">VAZGEÇ</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow rounded-4 overflow-hidden" *ngIf="!showForm">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small text-uppercase"><tr><th class="ps-4 py-3">Görsel</th><th>Başlık</th><th>Kategori</th><th class="text-end pe-4">İşlemler</th></tr></thead>
+                        <tbody><tr *ngFor="let news of newsList"><td class="ps-4"><img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="rounded shadow-sm" width="60"></td><td class="fw-bold">{{ news.title }}</td><td><span class="badge bg-primary-subtle text-primary">{{ news.category_name }}</span></td><td class="text-end pe-4"><button (click)="editItem(news, 'news')" class="btn btn-sm btn-light text-warning me-2"><i class="fas fa-edit"></i></button><button (click)="deleteItem(news.id, 'news')" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'slider'" class="fade-in">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow h-100">
+                            <div class="card-header bg-warning text-dark py-3"><h6 class="fw-bold m-0"><i class="fas fa-star me-2"></i> YAYINDAKİ MANŞETLER</h6></div>
+                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <tr *ngFor="let news of activeSliderNews"><td class="ps-3"><img [src]="baseUrl + news.image_path" width="60" class="rounded"></td><td class="small fw-bold">{{ news.title }}</td><td class="text-end pe-3"><button class="btn btn-outline-danger btn-sm rounded-circle" (click)="toggleStatus(news, 'is_slider')"><i class="fas fa-times"></i></button></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow h-100">
+                            <div class="card-header bg-light py-3"><h6 class="fw-bold m-0 text-secondary"><i class="fas fa-list me-2"></i> HAVUZ (ADAYLAR)</h6></div>
+                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <tr *ngFor="let news of candidateNews"><td class="ps-3"><img [src]="baseUrl + news.image_path" width="60" class="rounded opacity-75"></td><td class="small text-muted">{{ news.title }}</td><td class="text-end pe-3"><button class="btn btn-success btn-sm rounded-circle" (click)="toggleStatus(news, 'is_slider')"><i class="fas fa-plus"></i></button></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'breaking'" class="fade-in">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow h-100">
+                            <div class="card-header bg-danger text-white py-3"><h6 class="fw-bold m-0"><i class="fas fa-bolt me-2"></i> AKTİF SON DAKİKALAR</h6></div>
+                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <tr *ngFor="let news of activeBreakingNews"><td class="ps-4 small fw-bold">{{ news.title }}</td><td class="text-end pe-4"><button class="btn btn-outline-danger btn-sm rounded-circle" (click)="toggleStatus(news, 'is_breaking')"><i class="fas fa-times"></i></button></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow h-100">
+                            <div class="card-header bg-light py-3"><h6 class="fw-bold m-0 text-secondary"><i class="fas fa-list me-2"></i> HAVUZ (ADAYLAR)</h6></div>
+                            <div class="card-body p-0 overflow-auto" style="max-height: 600px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <tr *ngFor="let news of candidateNews"><td class="ps-4 small text-muted">{{ news.title }}</td><td class="text-end pe-4"><button class="btn btn-outline-danger btn-sm rounded-circle" (click)="toggleStatus(news, 'is_breaking')"><i class="fas fa-plus"></i></button></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'columnists'" class="fade-in">
+                <div class="mb-4" *ngIf="!showForm"><button class="btn btn-info text-white px-4 py-3 fw-bold shadow hover-scale rounded-pill" (click)="showForm = true"><i class="fas fa-plus-circle me-2"></i> YENİ YAZI YAZ</button></div>
+                <div *ngIf="showForm" class="card border-0 shadow p-4 mb-4 rounded-4 bg-white fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold text-info"><img *ngIf="currentUser.image_path" [src]="baseUrl + currentUser.image_path" class="rounded-circle me-2" width="30"> {{ currentUser.full_name }} Olarak Yazıyorsunuz</h5><button class="btn-close" (click)="resetForm()"></button></div>
+                    <div class="row g-3"><div class="col-12"><label class="fw-bold small text-muted">BAŞLIK</label><input [(ngModel)]="postData.title" class="form-control form-control-lg fw-bold"></div><div class="col-12"><label class="fw-bold small text-muted">İÇERİK</label><div class="bg-white border rounded overflow-hidden"><quill-editor [(ngModel)]="postData.content" [styles]="{height: '400px'}"></quill-editor></div></div><div class="col-12 text-end"><button (click)="saveColumnPost()" class="btn btn-info text-white btn-lg fw-bold px-5">YAYINLA</button></div></div>
+                </div>
+                <div class="card border-0 shadow rounded-4 overflow-hidden mt-4" *ngIf="!showForm">
+                    <table class="table table-hover align-middle mb-0"><thead class="bg-light text-muted small"><tr><th class="ps-4">YAZAR</th><th>BAŞLIK</th><th>TARİH</th><th class="text-end pe-4">İŞLEM</th></tr></thead><tbody><tr *ngFor="let post of columnPostList"><td class="ps-4"><span class="fw-bold text-dark">{{ post.author_name }}</span></td><td class="fw-bold text-secondary">{{ post.title }}</td><td class="small text-muted">{{ post.created_at | date:'dd.MM.yyyy' }}</td><td class="text-end pe-4"><button (click)="deleteColumnPost(post.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i> Sil</button></td></tr></tbody></table>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'personnel'" class="fade-in">
+                <div class="mb-4" *ngIf="!showForm"><button class="btn btn-dark text-white px-4 py-3 fw-bold shadow rounded-pill" (click)="showForm = true"><i class="fas fa-user-plus me-2"></i> YENİ PERSONEL EKLE</button></div>
+                <div *ngIf="showForm" class="card border-0 shadow p-4 mb-4 rounded-4 bg-white fade-in">
+                     <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold text-dark">{{ isEditing ? 'Personeli Düzenle' : 'Yeni Personel' }}</h5><button class="btn-close" (click)="resetForm()"></button></div>
+                     <div class="row g-3"><div class="col-md-6"><label class="small fw-bold text-muted">Kullanıcı Adı</label><input [(ngModel)]="userData.username" class="form-control"></div><div class="col-md-6"><label class="small fw-bold text-muted">Şifre</label><input [(ngModel)]="userData.password" type="password" class="form-control"></div><div class="col-md-6"><label class="small fw-bold text-muted">Ad Soyad</label><input [(ngModel)]="userData.full_name" class="form-control"></div><div class="col-md-6"><label class="small fw-bold text-muted">Yetki</label><select [(ngModel)]="userData.role" class="form-select"><option value="author">Yazar</option><option value="editor">Editör</option><option value="admin">Yönetici</option></select></div><div class="col-12"><label class="small fw-bold text-muted">Resim</label><input type="file" (change)="onFileSelected($event)" class="form-control"></div><div class="col-12 text-end"><button (click)="saveUser()" class="btn btn-dark fw-bold px-5">{{ isEditing ? 'GÜNCELLE' : 'KAYDET' }}</button></div></div>
+                </div>
+                <div class="card border-0 shadow rounded-4 overflow-hidden" *ngIf="!showForm">
+                    <table class="table table-hover align-middle mb-0"><thead class="bg-light text-muted small"><tr><th>Personel</th><th>Kullanıcı Adı</th><th>Yetki</th><th class="text-end pe-4">İşlem</th></tr></thead><tbody><tr *ngFor="let user of userList"><td class="ps-4"><span class="fw-bold">{{ user.full_name }}</span></td><td>{{ user.username }}</td><td>{{ user.role | uppercase }}</td><td class="text-end pe-4"><button (click)="editUser(user)" class="btn btn-sm btn-light text-primary me-2"><i class="fas fa-edit"></i></button><button (click)="deleteUser(user.id)" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button></td></tr></tbody></table>
+                </div>
+            </div>
+
+            <div *ngIf="activeTab === 'videos'" class="fade-in">
+                <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-5"><input [(ngModel)]="videoData.title" class="form-control" placeholder="Video Başlığı"></div><div class="col-md-5"><input [(ngModel)]="videoData.url" class="form-control" placeholder="YouTube Linki"></div><div class="col-md-2"><button (click)="saveVideo()" class="btn btn-danger w-100">Ekle</button></div></div></div>
+                <div class="row g-3"><div *ngFor="let v of videoList" class="col-md-4"><div class="card h-100 shadow-sm border-0"><iframe [src]="sanitizer.bypassSecurityTrustResourceUrl(v.url)" height="200" frameborder="0" allowfullscreen></iframe><div class="card-body d-flex justify-content-between"><span class="small fw-bold">{{ v.title }}</span><button (click)="deleteItem(v.id, 'videos')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></div></div></div></div>
+            </div>
+
+            <div *ngIf="activeTab === 'ads'" class="fade-in">
+                <div class="card p-4 mb-4 border-0 shadow-sm"><div class="row g-2"><div class="col-md-3"><input [(ngModel)]="adData.title" class="form-control" placeholder="Reklam Adı"></div><div class="col-md-3"><input [(ngModel)]="adData.target_url" class="form-control" placeholder="URL"></div><div class="col-md-2"><select [(ngModel)]="adData.area" class="form-select"><option value="sidebar">Sidebar</option><option value="header">Header</option></select></div><div class="col-md-2"><input type="file" id="adFile" class="form-control"></div><div class="col-md-2"><button (click)="saveAd()" class="btn btn-success w-100">Ekle</button></div></div></div>
+                <div class="row g-3"><div *ngFor="let ad of adList" class="col-md-3"><div class="card h-100"><img [src]="baseUrl + ad.image_path" class="card-img-top" style="height: 100px; object-fit: contain;"><div class="card-body"><p class="small fw-bold m-0">{{ ad.title }}</p><button (click)="deleteItem(ad.id, 'ads')" class="btn btn-sm btn-danger float-end"><i class="fas fa-trash"></i></button></div></div></div></div>
+            </div>
+
+        </div>
     </div>
 </div>
-
-    </div> </div> ```
 
 ============================================================
 DOSYA YOLU: frontend\src\app\components\admin\dashboard\dashboard.spec.ts
@@ -6097,25 +6167,29 @@ import { FormsModule } from '@angular/forms';
 import { QuillModule } from 'ngx-quill';
 import Cropper from 'cropperjs';
 import { DomSanitizer } from '@angular/platform-browser';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
 
 // Servisler
 import { AuthService } from '../../../services/auth';
 import { NewsService } from '../../../services/news'; 
+import { DashboardService } from '../../../services/dashboard';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, QuillModule],
+  imports: [CommonModule, RouterModule, FormsModule, QuillModule, BaseChartDirective],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  activeTab: string = 'news'; 
+  activeTab: string = 'overview'; 
   showForm: boolean = false;
   isEditing: boolean = false;
   currentId: number | null = null;
   currentUser: any = null;
   selectedFile: boolean = false;
+  stats: any = null;
   
   baseUrl = 'http://localhost:3000'; 
   @ViewChild('imageElement') imageElement!: ElementRef;
@@ -6141,13 +6215,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
   userData = { username: '', password: '', full_name: '', role: 'author', image: null };
   postData = { title: '', content: '' }; 
 
+  // 1. PASTA GRAFİK (Editör Performansı)
+  pieChartData: ChartConfiguration<'pie'>['data'] = {
+    labels: [],
+    datasets: [{ data: [] }]
+  };
+  pieChartOptions: ChartOptions<'pie'> = { responsive: true };
+
+  // 2. BAR GRAFİK (En Çok Okunanlar)
+  barChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: [{ data: [], label: 'Okunma Sayısı', backgroundColor: '#0d6efd' }]
+  };
+  barChartOptions: ChartOptions<'bar'> = { responsive: true };
+
+  // 3. GENİŞ BAR GRAFİK (Son 7 Günde Eklenen Haberler)
+  recentNewsData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: [{ 
+        data: [], 
+        label: 'Okunma Sayısı', 
+        backgroundColor: '#6610f2', // Mor renk olsun, diğerinden ayrılsın
+        barPercentage: 0.5 // Çubuklar çok kalın olmasın
+    }]
+  };
+  recentNewsOptions: ChartOptions<'bar'> = { 
+      responsive: true,
+      maintainAspectRatio: false, // Boyutlandırmayı biz kontrol edelim
+      scales: {
+          y: { beginAtZero: true }
+      }
+  };
+
   constructor(
     private authService: AuthService, 
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     public sanitizer: DomSanitizer,
-    private newsService: NewsService 
+    private newsService: NewsService, 
+    private dashboardService: DashboardService
   ) {}
 
   ngOnInit() {
@@ -6164,6 +6271,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
          this.activeTab = '';
       }
     }
+  }
+
+  // --- İSTATİSTİKLERİ ÇEK VE GRAFİĞE DÖK ---
+  loadStats() {
+      this.dashboardService.getStats().subscribe(res => {
+          this.stats = res;
+
+          // Pasta Grafik Verisi (Editörler)
+          if(res.authorStats) {
+              this.pieChartData = {
+                  labels: res.authorStats.map((a: any) => a.full_name),
+                  datasets: [{ data: res.authorStats.map((a: any) => a.news_count) }]
+              };
+          }
+
+          // Bar Grafik Verisi (En Çok Okunanlar)
+          if(res.topNews) {
+              this.barChartData = {
+                  labels: res.topNews.map((n: any) => n.title.substring(0, 15) + '...'), // Başlık çok uzunsa kısalt
+                  datasets: [{ data: res.topNews.map((n: any) => n.view_count), label: 'Okunma', backgroundColor: '#0d6efd' }]
+              };
+          }
+
+          // 3. YENİ GENİŞ BAR GRAFİK (Son 7 Gün Haberleri)
+          if(res.last7Days) {
+              this.recentNewsData = {
+                  // Etiket olarak: "Haber Başlığı (Tarih)"
+                  labels: res.last7Days.map((n: any) => `${n.title.substring(0, 20)}.. (${n.short_date})`),
+                  datasets: [{
+                      data: res.last7Days.map((n: any) => n.view_count),
+                      label: 'Bu Haberin Okunma Sayısı',
+                      backgroundColor: '#6610f2', // Mor
+                      hoverBackgroundColor: '#520dc2'
+                  }]
+              };
+          }
+
+          
+          this.cdr.detectChanges();
+      });
   }
 
   // --- YETKİ KONTROLÜ ---
@@ -6187,7 +6334,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.resetForm();
     
     // Hangi sekmeye geçildiyse onun verisini yükle
-    if (tabName === 'news') this.getNews();
+    if (tabName === 'overview') this.loadStats();
+    else if (tabName === 'news') this.getNews();
     else if (tabName === 'slider') this.loadSliderEditor();
     else if (tabName === 'breaking') this.loadBreakingEditor();
     else if (tabName === 'videos') this.getVideos();
@@ -6438,6 +6586,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       reader.readAsDataURL(file);
     }
   }
+
+  getLast7DaysLabels(): string[] {
+    const dates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      dates.push(`${day}.${month}`);
+    }
+    return dates;
+  }
 }
 
 ============================================================
@@ -6585,6 +6745,54 @@ export class ColumnPostDetailComponent implements OnInit {
 }
 
 ============================================================
+DOSYA YOLU: frontend\src\app\components\cookies\cookies.ts
+============================================================
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-cookies',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="container py-5 fade-in">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 bg-white p-5 rounded-4 shadow-sm border border-light-subtle">
+          <h1 class="fw-bold text-dark mb-4 border-bottom pb-3">Çerez (Cookie) Politikası</h1>
+          <div class="fs-6 text-secondary lh-lg">
+            <p><strong>Son Güncelleme:</strong> {{ today | date:'dd.MM.yyyy' }}</p>
+            <p>Nerik Dijital Medya ("Nerik Haber") olarak, ziyaretçilerimize daha iyi bir hizmet sunabilmek, sitemizi güvenli tutmak ve site kullanımını analiz etmek amacıyla çerezler (cookies) kullanmaktayız.</p>
+            
+            <h4 class="fw-bold text-dark mt-4">1. Çerez Nedir?</h4>
+            <p>Çerezler, bir web sitesini ziyaret ettiğinizde tarayıcınız aracılığıyla bilgisayarınıza veya mobil cihazınıza kaydedilen küçük boyutlu metin dosyalarıdır. Sitemizin cihazınızı tanımasını ve tercihlerinizi hatırlamasını sağlar.</p>
+
+            <h4 class="fw-bold text-dark mt-4">2. Hangi Çerezleri Kullanıyoruz?</h4>
+            <ul class="lh-lg">
+              <li><strong>Zorunlu Çerezler:</strong> Sitenin temel işlevlerini (güvenlik, sayfa yükleme vb.) yerine getirmesi için kesinlikle gereklidir.</li>
+              <li><strong>Analitik Çerezler:</strong> Ziyaretçilerin siteyi nasıl kullandığını anlamamıza yardımcı olur. Hangi haberlerin daha çok okunduğunu analiz etmek için kullanılır. Bu veriler tamamen anonimdir.</li>
+              <li><strong>Reklam Çerezleri:</strong> Size ilgi alanlarınıza uygun reklamlar (varsa) göstermek amacıyla iş ortaklarımız tarafından kullanılabilir.</li>
+            </ul>
+
+            <h4 class="fw-bold text-dark mt-4">3. Çerezleri Nasıl Yönetebilirsiniz?</h4>
+            <p>Çoğu web tarayıcısı, çerezleri otomatik olarak kabul edecek şekilde ayarlanmıştır. Tarayıcı ayarlarınızı değiştirerek çerezleri dilediğiniz zaman reddedebilir veya cihazınızdan silebilirsiniz. Ancak çerezleri devre dışı bırakmanız durumunda sitemizin bazı özellikleri düzgün çalışmayabilir.</p>
+
+            <h4 class="fw-bold text-dark mt-4">4. Değişiklikler</h4>
+            <p>Bu Çerez Politikası, yasal veya operasyonel nedenlerle tarafımızca zaman zaman güncellenebilir. Politika metnindeki değişiklikleri takip etmek ziyaretçinin sorumluluğundadır.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class CookiesComponent implements OnInit {
+  today = new Date();
+  
+  ngOnInit() {
+    window.scrollTo(0, 0);
+  }
+}
+
+============================================================
 DOSYA YOLU: frontend\src\app\components\home\home.css
 ============================================================
 /* Logo Kutusu */
@@ -6701,34 +6909,87 @@ DOSYA YOLU: frontend\src\app\components\home\home.css
 ============================================================
 DOSYA YOLU: frontend\src\app\components\home\home.html
 ============================================================
+<div class="container mt-3 mb-3">
+    <div *ngIf="headerAd" class="w-100 text-center">
+        <a [href]="headerAd.target_url || '#'" target="_blank">
+            <img [src]="baseUrl + headerAd.image_path" 
+                 class="img-fluid rounded shadow-sm border" 
+                 [title]="headerAd.title"
+                 style="max-height: 150px; width: 100%; object-fit: cover;">
+        </a>
+    </div>
 
-<div class="breaking-news-bar bg-primary text-white overflow-hidden position-relative" style="height: 40px;">
-    <div class="container-fluid h-100 p-0 d-flex"> <div class="breaking-label bg-dark px-4 h-100 d-flex align-items-center fw-bold small fst-italic position-relative z-2">
+    <div *ngIf="!headerAd" class="w-100 bg-light rounded border border-dashed d-flex align-items-center justify-content-center text-muted" style="height: 120px;">
+        <span class="small fw-bold letter-spacing-1">728x90 REKLAM ALANI</span>
+    </div>
+</div>
+
+<div class="breaking-news-bar bg-primary text-white overflow-hidden position-relative mb-4" style="height: 40px;">
+    <div class="container-fluid h-100 p-0 d-flex"> 
+        <div class="breaking-label bg-dark px-4 h-100 d-flex align-items-center fw-bold small fst-italic position-relative z-2">
             <span class="spinner-grow spinner-grow-sm text-danger me-2"></span> SON DAKİKA
         </div>
-
         <div class="marquee-wrapper w-100 d-flex align-items-center overflow-hidden position-relative">
             <div class="marquee-content fw-bold small">
                 {{ breakingNews }}
             </div>
         </div>
-
     </div>
 </div>
 
-<main class="container py-5">
+<main class="container pb-5">
     <div class="row g-5">
+        
         <div class="col-lg-8">
             
-            <div *ngIf="sliderNews.length > 0" class="bg-dark rounded-4 mb-5 position-relative overflow-hidden" style="height: 450px;">
-                <img [src]="baseUrl + sliderNews[0].image_path" class="w-100 h-100 object-fit-cover" alt="Manşet">
-                <div class="position-absolute bottom-0 start-0 w-100 p-4" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
-                    <h2 class="text-white fw-bold mb-1">{{ sliderNews[0].title | uppercase }}</h2>
+            <div *ngIf="sliderNews.length > 0" 
+                 class="bg-dark rounded-4 mb-5 position-relative overflow-hidden shadow-lg slider-container" 
+                 style="height: 450px;"
+                 (mouseenter)="stopAutoSlide()" 
+                 (mouseleave)="startAutoSlide()">
+                
+                <a [routerLink]="['/haber', sliderNews[currentSlideIndex].slug]" class="d-block w-100 h-100 text-decoration-none cursor-pointer">
+                    <img [src]="baseUrl + sliderNews[currentSlideIndex].image_path" 
+                         class="w-100 h-100 object-fit-cover slider-img" 
+                         alt="Manşet"
+                         style="transition: opacity 0.5s ease-in-out;">
+                    
+                    <div class="position-absolute bottom-0 start-0 w-100 p-4" 
+                         style="background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);">
+                        <span class="badge bg-danger mb-2">{{ sliderNews[currentSlideIndex].category_name || 'Gündem' }}</span>
+                        <h2 class="text-white fw-bold mb-1 text-shadow display-6" style="font-size: 1.75rem;">
+                            {{ sliderNews[currentSlideIndex].title | uppercase }}
+                        </h2>
+                    </div>
+                </a>
+
+                <button class="btn btn-dark bg-opacity-50 position-absolute top-50 start-0 translate-middle-y ms-3 rounded-circle text-white border-0 hover-scale shadow" 
+                        style="width: 45px; height: 45px; z-index: 10;"
+                        (click)="prevSlide()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <button class="btn btn-dark bg-opacity-50 position-absolute top-50 end-0 translate-middle-y me-3 rounded-circle text-white border-0 hover-scale shadow" 
+                        style="width: 45px; height: 45px; z-index: 10;"
+                        (click)="nextSlide()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3 d-flex gap-2" style="z-index: 10;">
+                    <button *ngFor="let slide of sliderNews; let i = index" 
+                            class="rounded-circle border-0 transition-all"
+                            [ngClass]="i === currentSlideIndex ? 'bg-primary' : 'bg-white opacity-50'"
+                            style="width: 10px; height: 10px; padding: 0;"
+                            (click)="goToSlide(i)">
+                    </button>
                 </div>
             </div>
 
             <div *ngIf="sliderNews.length === 0" class="bg-secondary rounded-4 mb-5 d-flex align-items-center justify-content-center text-white" style="height: 450px;">
-                <p>Henüz manşet haber girilmedi.</p>
+                <div class="text-center">
+                    <i class="fas fa-images fa-3x mb-3 opacity-50"></i>
+                    <p class="m-0">Henüz manşet haber girilmedi.</p>
+                </div>
             </div>
 
             <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
@@ -6736,46 +6997,50 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
             </div>
 
             <div class="d-flex flex-column gap-4">
-                
-                <article *ngFor="let news of latestNews" class="bg-white rounded-4 shadow-sm overflow-hidden d-flex flex-column flex-md-row">
+                <article *ngFor="let news of latestNews" class="bg-white rounded-4 shadow-sm overflow-hidden d-flex flex-column flex-md-row hover-shadow transition-all">
                     <div class="col-md-5 position-relative bg-light d-flex align-items-center justify-content-center overflow-hidden" style="min-height: 200px;">
                         <span class="badge bg-primary position-absolute top-0 start-0 m-3 z-1">{{ news.category_name || 'Gündem' }}</span>
                         
-                        <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0">
+                        <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
                         
                         <i *ngIf="!news.image_path" class="fas fa-newspaper fa-3x text-secondary opacity-25"></i>
                     </div>
 
                     <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
-                        <h4 class="fw-bold text-secondary mb-2">{{ news.title | uppercase }}</h4>
-                        <p class="text-muted small mb-3 line-clamp-2">{{ news.summary }}</p>
+                        <h4 class="fw-bold text-dark mb-2">
+                            <a [routerLink]="['/haber', news.slug]" class="text-decoration-none text-dark hover-text-primary">
+                                {{ news.title | uppercase }}
+                            </a>
+                        </h4>
+                        <p class="text-muted small mb-3 line-clamp-2" [innerHTML]="news.content | slice:0:150"></p>
                         
                         <div class="d-flex align-items-center justify-content-between mt-auto">
                             <span class="small text-muted"><i class="far fa-clock me-1"></i> {{ news.created_at | date:'dd.MM.yyyy' }}</span>
-                            <a [routerLink]="['/haber', news.slug]" class="text-primary small fw-bold text-decoration-none cursor-pointer">
-                                <i class="fas fa-arrow-right me-1"></i> Haberi Oku
+                            <a [routerLink]="['/haber', news.slug]" class="btn btn-sm btn-outline-primary rounded-pill fw-bold px-3">
+                                Haberi Oku <i class="fas fa-arrow-right ms-1"></i>
                             </a>
                         </div>
                     </div>
                 </article>
-
             </div>
         </div>
 
         <div class="col-lg-4">
+            
             <div *ngIf="sidebarAds.length > 0" class="d-flex flex-column gap-4 mb-4">
-    <div *ngFor="let ad of sidebarAds" class="bg-white border rounded-4 shadow-sm overflow-hidden text-center" style="min-height: 300px;">
-        <a [href]="ad.target_url || '#'" target="_blank" class="d-block w-100 h-100">
-            <img [src]="baseUrl + ad.image_path" class="img-fluid" [title]="ad.title">
-        </a>
-    </div>
-</div>
+                <div *ngFor="let ad of sidebarAds" class="bg-white border rounded-4 shadow-sm overflow-hidden text-center position-relative" style="min-height: 300px;">
+                    <span class="position-absolute top-0 end-0 bg-light text-muted px-2 py-1 small" style="font-size: 0.6rem; border-bottom-left-radius: 5px;">REKLAM</span>
+                    <a [href]="ad.target_url || '#'" target="_blank" class="d-block w-100 h-100">
+                        <img [src]="baseUrl + ad.image_path" class="img-fluid" [title]="ad.title" style="width: 100%; height: 100%; object-fit: contain;">
+                    </a>
+                </div>
+            </div>
 
-<div *ngIf="sidebarAds.length === 0" class="bg-white d-flex align-items-center justify-content-center border rounded-4 mb-4 shadow-sm" style="height: 300px; border-style: dashed !important;">
-    <span class="text-secondary small fw-bold">DİKEY REKLAM ALANI</span>
-</div>
+            <div *ngIf="sidebarAds.length === 0" class="bg-white d-flex align-items-center justify-content-center border rounded-4 mb-4 shadow-sm" style="height: 300px; border-style: dashed !important;">
+                <span class="text-secondary small fw-bold">REKLAM ALANI</span>
+            </div>
 
-            <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-5">
+            <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-5 position-sticky" style="top: 100px;">
                 <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
                     <h5 class="fw-bold mb-0 text-secondary border-start border-4 border-primary ps-3">Köşe Yazıları</h5>
                 </div>
@@ -6784,18 +7049,21 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
                     <div *ngFor="let post of columnPosts" class="d-flex align-items-start gap-3 border-bottom pb-3 last-no-border">
                         <img *ngIf="post.author_image" [src]="baseUrl + post.author_image" 
                              class="rounded-circle border border-2 border-light shadow-sm" 
-                             width="60" height="60" style="object-fit: cover;">
+                             width="50" height="50" style="object-fit: cover;">
                         
                         <div *ngIf="!post.author_image" 
-                             class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-sm" 
-                             style="width: 60px; height: 60px;">
+                             class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" 
+                             style="width: 50px; height: 50px;">
                              {{ post.author_name?.charAt(0) }}
                         </div>
 
-                        <div>
-                            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">{{ post.title }}</h6>
-                            <span class="d-block small text-primary fw-bold mb-1">{{ post.author_name }}</span>
-                            <a [routerLink]="['/yazi', post.id]" class="small text-muted text-decoration-underline fst-italic" style="cursor: pointer;">Yazıyı Oku</a>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-1 lh-sm">
+                                <a [routerLink]="['/yazi', post.id]" class="text-decoration-none text-dark hover-text-primary">
+                                    {{ post.title }}
+                                </a>
+                            </h6>
+                            <span class="d-block small text-primary fw-bold mb-0">{{ post.author_name }}</span>
                         </div>
                     </div>
                 </div>
@@ -6809,8 +7077,7 @@ DOSYA YOLU: frontend\src\app\components\home\home.html
     </div>
 </main>
 
-
-<a href="https://wa.me/905369932055" class="whatsapp-float" target="_blank">
+<a href="https://wa.me/905369932055" class="whatsapp-float shadow-lg hover-scale" target="_blank">
     <i class="fab fa-whatsapp fa-lg"></i>
     <span class="d-none d-md-inline ms-2">İhbar Hattı</span>
 </a>
@@ -6846,12 +7113,12 @@ describe('Home', () => {
 ============================================================
 DOSYA YOLU: frontend\src\app\components\home\home.ts
 ============================================================
-import { Component, OnInit, OnDestroy } from '@angular/core'; // OnDestroy eklendi
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, NavigationEnd } from '@angular/router'; // NavigationEnd eklendi
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NewsService } from '../../services/news';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subscription } from 'rxjs'; // Subscription eklendi
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -6871,22 +7138,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   headerAd: any = null;
   sidebarAds: any[] = [];
   
+  // SLIDER İÇİN YENİ DEĞİŞKENLER
+  currentSlideIndex: number = 0;
+  autoSlideInterval: any;
+
   weather$!: Observable<{ temp: string, icon: string }>;
-  private routerSubscription!: Subscription; // Takipçi değişken
+  private routerSubscription!: Subscription;
 
   constructor(
     private newsService: NewsService,
     private http: HttpClient,
-    private router: Router // Router eklendi
+    private router: Router
   ) {}
 
   ngOnInit() {
-    this.loadAllData(); // İlk açılışta yükle
+    this.loadAllData();
 
-    // SAYFAYA HER DÖNÜLDÜĞÜNDE YENİDEN YÜKLE
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        // Eğer Anasayfadaysak verileri tazele
         if (event.url === '/' || event.url === '/home') {
            this.loadAllData();
         }
@@ -6895,31 +7164,36 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Sayfadan tamamen çıkılınca takibi bırak (Hafıza şişmesin)
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    this.stopAutoSlide(); // Sayfadan çıkınca dönmeyi durdur
   }
 
-  // Tüm verileri çeken fonksiyon
   loadAllData() {
     this.today = new Date();
     this.getNews();
     this.getColumnPosts();
     this.getAds();
-    // Hava durumu (kod kalabalığı olmasın diye burada özet geçtim, senin kodunda zaten var)
   }
 
   getNews() {
     this.newsService.getAllNews().subscribe({
       next: (data: any) => {
-        // Backend'den { news: [...] } formatında geliyor olabilir, kontrol et
         const newsArray = data.news ? data.news : data;
         
         if (Array.isArray(newsArray)) {
           this.latestNews = newsArray;
+          
+          // Slider Haberleri
           this.sliderNews = newsArray.filter((n: any) => n.is_slider);
           
+          // Slider geldiyse otomatik döndürmeyi başlat
+          if (this.sliderNews.length > 0) {
+            this.startAutoSlide();
+          }
+
+          // Son Dakika
           const breaking = newsArray.filter((n: any) => n.is_breaking);
           this.breakingNews = breaking.map((n: any) => n.title).join(' • ');
         }
@@ -6939,6 +7213,44 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.headerAd = ads.find(a => a.area === 'header');
       this.sidebarAds = ads.filter(a => a.area === 'sidebar');
     });
+  }
+
+  // --- SLIDER FONKSİYONLARI ---
+
+  // Sonraki Slayt
+  nextSlide() {
+    if (this.sliderNews.length > 0) {
+      this.currentSlideIndex = (this.currentSlideIndex + 1) % this.sliderNews.length;
+    }
+  }
+
+  // Önceki Slayt
+  prevSlide() {
+    if (this.sliderNews.length > 0) {
+      this.currentSlideIndex = (this.currentSlideIndex - 1 + this.sliderNews.length) % this.sliderNews.length;
+    }
+  }
+
+  // Belirli Slayta Git (Noktalara basınca)
+  goToSlide(index: number) {
+    this.currentSlideIndex = index;
+    this.stopAutoSlide(); // Kullanıcı müdahale ettiyse durdur
+    this.startAutoSlide(); // Sonra tekrar başlat
+  }
+
+  // Otomatik Dönmeyi Başlat
+  startAutoSlide() {
+    this.stopAutoSlide(); // Çakışma olmasın diye önce temizle
+    this.autoSlideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 5000); // 5 Saniyede bir döner
+  }
+
+  // Otomatik Dönmeyi Durdur (Mouse üzerine gelince vb.)
+  stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
   }
 }
 
@@ -7082,42 +7394,70 @@ DOSYA YOLU: frontend\src\app\components\news-detail\news-detail.html
 <div class="container py-5">
     
     <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2 text-muted">Haber yükleniyor...</p>
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+        <p class="mt-3 text-muted fw-bold">Haber yükleniyor...</p>
     </div>
 
     <div *ngIf="!loading && news" class="row justify-content-center fade-in">
         <div class="col-lg-9">
             
-            <div class="mb-4">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
                 <a routerLink="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm hover-scale">
                     <i class="fas fa-arrow-left me-2"></i> Anasayfaya Dön
                 </a>
+                
+                <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill shadow-sm">{{ news.category_name || 'Gündem' }}</span>
             </div>
 
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <span class="badge bg-primary px-3 py-2">{{ news.category_name || 'Gündem' }}</span>
-                <span class="text-muted small"><i class="far fa-clock me-1"></i> {{ news.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
-                <span class="text-muted small"><i class="far fa-eye me-1"></i> {{ news.view_count }} okuma</span>
+            <h1 class="fw-bold text-dark mb-3 display-5 lh-sm">{{ news.title }}</h1>
+
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-4 text-muted border-bottom pb-3">
+                <span class="d-flex align-items-center small">
+                    <i class="far fa-calendar-alt me-2 text-primary"></i> 
+                    {{ news.created_at | date:'dd MMMM yyyy HH:mm' }}
+                </span>
+                <span class="d-flex align-items-center small">
+                    <i class="far fa-eye me-2 text-primary"></i> 
+                    {{ news.view_count }} Kez Okundu
+                </span>
+                <span class="d-flex align-items-center small ms-md-auto">
+                    <i class="fas fa-user-edit me-2 text-primary"></i>
+                    {{ news.author_name || 'Editör' }}
+                </span>
             </div>
 
-            <h1 class="fw-bold text-dark mb-4 display-6">{{ news.title }}</h1>
+            <p class="lead fw-bold text-secondary mb-4 fs-4" style="line-height: 1.6;">{{ news.summary }}</p>
 
-            <p class="lead fw-bold text-secondary mb-4">{{ news.summary }}</p>
-
-            <div class="mb-5 rounded-4 overflow-hidden shadow-sm position-relative">
+            <div class="mb-5 rounded-4 overflow-hidden shadow position-relative">
                 <img *ngIf="news.image_path" [src]="baseUrl + news.image_path" class="w-100 object-fit-cover" style="max-height: 500px;" alt="{{ news.title }}">
             </div>
 
-            <div class="news-content fs-5 text-dark lh-lg" [innerHTML]="safeContent"></div>
+            <div class="news-content fs-5 text-dark lh-lg mb-5" [innerHTML]="safeContent"></div>
 
-            <div class="mt-5 p-4 bg-light rounded-4 border border-light-subtle d-flex align-items-center gap-3">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-4 fw-bold" style="width: 50px; height: 50px;">
-                    {{ news.author_name?.charAt(0) || 'A' }}
+            <div class="bg-light p-4 rounded-4 border d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 shadow-sm mb-5">
+                <div>
+                    <h6 class="fw-bold text-dark m-0">Bu haberi beğendin mi?</h6>
+                    <small class="text-muted">Arkadaşlarınla paylaşarak bize destek ol.</small>
+                </div>
+                
+                <div class="d-flex gap-2 w-100 w-md-auto">
+                    <button (click)="shareWhatsapp()" class="btn btn-success flex-grow-1 fw-bold text-white shadow-sm hover-scale">
+                        <i class="fab fa-whatsapp fa-lg me-2"></i> WhatsApp
+                    </button>
+
+                    <button (click)="copyLink()" class="btn btn-dark flex-grow-1 fw-bold shadow-sm hover-scale">
+                        <i class="fas fa-link me-2"></i> Linki Kopyala
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white rounded-4 border shadow-sm d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-3 fw-bold shadow-sm" style="width: 60px; height: 60px;">
+                    {{ news.author_name?.charAt(0) || 'N' }}
                 </div>
                 <div>
-                    <span class="d-block small text-muted text-uppercase fw-bold">Haber Editörü</span>
-                    <span class="fw-bold text-dark">{{ news.author_name || 'Editör' }}</span>
+                    <span class="d-block small text-muted text-uppercase fw-bold ls-1">Haber Editörü</span>
+                    <h5 class="fw-bold text-dark m-0">{{ news.author_name || 'Nerik Haber Editörü' }}</h5>
                 </div>
             </div>
 
@@ -7125,8 +7465,10 @@ DOSYA YOLU: frontend\src\app\components\news-detail\news-detail.html
     </div>
 
     <div *ngIf="!loading && !news" class="text-center py-5">
+        <i class="fas fa-exclamation-circle fa-4x text-muted mb-3 opacity-25"></i>
         <h3 class="fw-bold text-secondary">Haber Bulunamadı</h3>
-        <a routerLink="/" class="btn btn-primary mt-3">Anasayfaya Dön</a>
+        <p class="text-muted">Aradığınız haber yayından kaldırılmış veya taşınmış olabilir.</p>
+        <a routerLink="/" class="btn btn-primary mt-3 px-4 rounded-pill">Anasayfaya Dön</a>
     </div>
 </div>
 
@@ -7161,11 +7503,11 @@ describe('NewsDetail', () => {
 ============================================================
 DOSYA YOLU: frontend\src\app\components\news-detail\news-detail.ts
 ============================================================
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // ChangeDetectorRef eklendi
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { NewsService } from '../../services/news';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser'; // <-- Meta EKLENDİ
 
 @Component({
   selector: 'app-news-detail',
@@ -7178,20 +7520,23 @@ export class NewsDetailComponent implements OnInit {
   news: any = null;
   safeContent: SafeHtml = ''; 
   baseUrl = 'http://localhost:3000';
-  loading = true; // Başlangıçta yükleniyor
+  loading = true;
+  currentUrl: string = '';
 
   constructor(
     private route: ActivatedRoute,
     private newsService: NewsService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef // Dedektif iş başında
+    private cdr: ChangeDetectorRef,
+    private titleService: Title,
+    private meta: Meta // <-- Servis EKLENDİ
   ) {}
 
   ngOnInit() {
+    this.currentUrl = window.location.href;
+
     this.route.paramMap.subscribe(params => {
       const slug = params.get('slug');
-      console.log("🔗 URL'den gelen slug:", slug); // Konsolda bunu gör
-      
       if (slug) {
         this.loadNews(slug);
       } else {
@@ -7206,23 +7551,63 @@ export class NewsDetailComponent implements OnInit {
     
     this.newsService.getNewsBySlug(slug).subscribe({
       next: (data) => {
-        console.log("✅ Haber Sunucudan Geldi:", data);
         this.news = data;
         
-        // HTML İçeriğini temizle/güvenli yap
         if (this.news.content) {
              this.safeContent = this.sanitizer.bypassSecurityTrustHtml(this.news.content);
         }
 
-        this.loading = false; // Yükleme bitti
-        this.cdr.detectChanges(); // ⚡ EKRANI ZORLA YENİLE
+        // 1. Tarayıcı Başlığını Değiştir
+        this.titleService.setTitle(`${this.news.title} - NERİK HABER`);
+
+        // 2. META ETİKETLERİNİ GÜNCELLE (WhatsApp, Google, Twitter için)
+        this.updateMetaTags();
+
+        this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Haber Çekme Hatası:', err);
-        this.loading = false; // Hata olsa bile yüklemeyi bitir
-        this.cdr.detectChanges(); // ⚡ EKRANI ZORLA YENİLE
+        console.error('Haber Çekme Hatası:', err);
+        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  // --- YENİ META FONKSİYONU ---
+  updateMetaTags() {
+    // Haber Özeti (Yoksa içeriğin ilk 150 karakteri)
+    const description = this.news.summary || this.news.title;
+    // Haber Resmi (Yoksa varsayılan site logosu)
+    const image = this.news.image_path ? this.baseUrl + this.news.image_path : 'assets/logo.png';
+
+    // Standart Meta Etiketleri
+    this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ name: 'author', content: this.news.author_name || 'Nerik Haber' });
+
+    // Open Graph (WhatsApp, Facebook, LinkedIn)
+    this.meta.updateTag({ property: 'og:title', content: this.news.title });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ property: 'og:url', content: this.currentUrl });
+    this.meta.updateTag({ property: 'og:type', content: 'article' });
+
+    // Twitter Kartları
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: this.news.title });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
+  }
+
+  copyLink() {
+    navigator.clipboard.writeText(this.currentUrl).then(() => {
+      alert('Link kopyalandı! Arkadaşına gönderebilirsin.');
+    });
+  }
+
+  shareWhatsapp() {
+    const text = encodeURIComponent(`${this.news.title}\nHaberi oku: ${this.currentUrl}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   }
 }
 
@@ -7425,6 +7810,54 @@ export class NewsListComponent implements OnInit {
 }
 
 ============================================================
+DOSYA YOLU: frontend\src\app\components\privacy\privacy.ts
+============================================================
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-privacy',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="container py-5 fade-in">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 bg-white p-5 rounded-4 shadow-sm border border-light-subtle">
+          <h1 class="fw-bold text-dark mb-4 border-bottom pb-3">Gizlilik Politikası</h1>
+          <div class="fs-6 text-secondary lh-lg">
+            <p><strong>Son Güncelleme:</strong> {{ today | date:'dd.MM.yyyy' }}</p>
+            <p>Nerik Dijital Medya ("Nerik Haber") olarak, ziyaretçilerimizin gizliliğine ve kişisel verilerinin korunmasına büyük önem veriyoruz. Bu Gizlilik Politikası, sitemizi (nerik.com) ziyaret ettiğinizde topladığımız bilgileri ve bu bilgileri nasıl kullandığımızı açıklar.</p>
+            
+            <h4 class="fw-bold text-dark mt-4">1. Toplanan Bilgiler</h4>
+            <p>Sitemizi ziyaret ettiğinizde, deneyiminizi iyileştirmek amacıyla tarayıcı türünüz, IP adresiniz, ziyaret ettiğiniz sayfalar ve sitede geçirdiğiniz süre gibi anonim istatistiksel veriler toplanabilir. Bu veriler sizi kişisel olarak tanımlamaz.</p>
+
+            <h4 class="fw-bold text-dark mt-4">2. Çerezler (Cookies)</h4>
+            <p>Sitemiz, kullanıcı tercihlerini hatırlamak ve site trafiğini analiz etmek için çerezler kullanmaktadır. Çerezler hakkında daha detaylı bilgi için <a href="/cerez-politikasi" class="text-primary fw-bold text-decoration-none">Çerez Politikamızı</a> inceleyebilirsiniz.</p>
+
+            <h4 class="fw-bold text-dark mt-4">3. Üçüncü Taraf Bağlantıları</h4>
+            <p>Sitemizde farklı web sitelerine bağlantılar bulunabilir. Nerik Haber, bu dış sitelerin gizlilik uygulamalarından sorumlu değildir. Başka bir siteye yönlendirildiğinizde, o sitenin gizlilik politikasını okumanızı tavsiye ederiz.</p>
+
+            <h4 class="fw-bold text-dark mt-4">4. Bilgilerin Paylaşımı</h4>
+            <p>Ziyaretçi verileri, yasal zorunluluklar (mahkeme kararları vb.) haricinde hiçbir şekilde üçüncü şahıs veya kurumlarla paylaşılmaz, satılmaz veya kiralanamaz.</p>
+
+            <h4 class="fw-bold text-dark mt-4">5. İletişim</h4>
+            <p>Gizlilik politikamız ile ilgili soru, şikayet ve görüşleriniz için sitemizde yer alan resmi sosyal medya hesaplarımız veya ihbar hattımız üzerinden bizimle iletişime geçebilirsiniz.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class PrivacyComponent implements OnInit {
+  today = new Date();
+  
+  ngOnInit() {
+    // Sayfa açıldığında en tepeye kaydır
+    window.scrollTo(0, 0);
+  }
+}
+
+============================================================
 DOSYA YOLU: frontend\src\app\guards\auth-guard.spec.ts
 ============================================================
 import { TestBed } from '@angular/core/testing';
@@ -7538,6 +7971,29 @@ export class AuthService {
     const user = localStorage.getItem('user');
     // JSON formatındaki veriyi nesneye çevirip geri döndürüyoruz
     return user ? JSON.parse(user) : null;
+  }
+}
+
+============================================================
+DOSYA YOLU: frontend\src\app\services\dashboard.ts
+============================================================
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DashboardService {
+  private baseUrl = 'http://localhost:3000/api/dashboard';
+
+  constructor(private http: HttpClient) { }
+
+  getStats(): Observable<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    
+    return this.http.get<any>(`${this.baseUrl}/stats`, { headers });
   }
 }
 

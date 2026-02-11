@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `ads` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.ads: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.ads: 2 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `ads` DISABLE KEYS */;
 INSERT INTO `ads` (`id`, `title`, `image_path`, `target_url`, `area`, `is_active`, `created_at`) VALUES
 	(1, 'adcac', '/uploads/1770585228366.jpeg', 'asvadcav', 'sidebar', 1, '2026-02-08 21:13:48'),
@@ -46,14 +46,15 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#2563eb',
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.categories: 3 rows tablosu için veriler indiriliyor
+-- nerik_db.categories: 4 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
 INSERT INTO `categories` (`id`, `name`, `slug`, `color`) VALUES
 	(1, 'Gündem', 'gundem', '#2563eb'),
 	(2, 'Spor', 'spor', '#2563eb'),
-	(3, 'Ekonomi', 'ekonomi', '#2563eb');
+	(3, 'Ekonomi', 'ekonomi', '#2563eb'),
+	(5, 'TEKNOLOJİ', '', '#2563eb');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.column_posts
@@ -66,12 +67,12 @@ CREATE TABLE IF NOT EXISTS `column_posts` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.column_posts: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.column_posts: 1 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `column_posts` DISABLE KEYS */;
 INSERT INTO `column_posts` (`id`, `user_id`, `title`, `content`, `view_count`, `created_at`) VALUES
-	(3, 2, 'Emreye GÖTTEN Basmışlar', '<p>Geçen gün Emreyi bir siktim dağlar taşlar dile geldi.</p>', 0, '2026-02-08 21:55:32');
+	(4, 2, 'köşe yazısı 1', '<ul><li>avsdvsfvdxfvscasdvsdvs<u>df&nbsp;df&nbsp;sf</u><em><u>sfvesvds</u></em><strong><em><u>svsvsdvsdvdsvsdcsdv&nbsp;sdvsdvsdvsvsdvsvsdvsdvsdv</u></em></strong><sub><strong><em><u>svsvsdvsdsdv</u></em></strong></sub><sup><strong><em><u>vsdvsdvsd</u></em></strong></sup><strong><em><u>svsvsdvsdvd</u></em></strong><strong class="ql-size-huge"><em><u>vdsvsdvs</u></em></strong><strong class="ql-size-small"><em><u>dsvsdvs</u></em></strong><strong><em><u>vsdvsvd</u></em></strong><strong style="background-color: rgb(230, 0, 0);"><em><u>vsdvsdvsdv</u></em></strong><strong style="background-color: rgb(0, 0, 0);"><em><u>sdvsdv</u></em></strong><strong><em><u>sdvsdvsdvsd</u></em></strong><strong style="color: rgb(68, 68, 68);"><em><u>sdvsdvsdv</u></em></strong><strong style="color: rgb(230, 0, 0);"><em><u>sdvsdvsdsdvs</u></em></strong><strong style="color: rgb(230, 0, 0);" class="ql-font-serif"><em><u>vsdvsdvsd</u></em></strong><strong style="color: rgb(230, 0, 0);" class="ql-font-monospace"><em><u>vsdvsdvsdvsdvs</u></em></strong></li></ul>', 0, '2026-02-09 19:44:21');
 /*!40000 ALTER TABLE `column_posts` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.news
@@ -96,12 +97,12 @@ CREATE TABLE IF NOT EXISTS `news` (
   KEY `author_id` (`author_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.news: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.news: 3 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `news` DISABLE KEYS */;
 INSERT INTO `news` (`id`, `title`, `slug`, `summary`, `content`, `image_path`, `category_id`, `author_id`, `status`, `view_count`, `is_breaking`, `is_slider`, `created_at`, `updated_at`) VALUES
-	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 7, 0, 0, '2026-02-08 18:07:34', '2026-02-08 22:53:20'),
-	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler-1770590892780', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p><p></p><p>https://www.youtube.com/watch?v=yr7mYngK1Xc&amp;pp=ygUWa8O8cnQgdHJhdmVzdGkgxZ9hcmvEsdIHCQmRCgGHKiGM7w%3D%3D</p>', '/uploads/1770578141018.jpg', 3, 2, 'published', 9, 0, 0, '2026-02-08 19:15:41', '2026-02-08 22:52:59'),
-	(4, 'Bakire Anteplinin Hazin Sonu ...', 'bakire-anteplinin-hazin-sonu-1770590909931', NULL, '<p>Antepli bakire genç <strong><u>Erdal Muhittin Sikikalkan,</u></strong> Sultan Taş adlı şahıs tarafından sikilerek öldürüldü. </p>', '/uploads/1770590676323.jpg', 2, 3, 'published', 2, 1, 1, '2026-02-08 22:44:36', '2026-02-08 22:53:48');
+	(1, 'Deneme Haber', 'deneme-haber-1770577555973', NULL, '<h1 class="ql-align-center"><em><u>Haber</u></em></h1><h2 class="ql-align-center"><s>Haber</s></h2><p class="ql-align-center"></p><p>Sistem Çalışıyor İse Haber <strong>Görüntülenecektir.</strong></p>', '/uploads/1770577555962.jpg', 1, 2, 'published', 12, 1, 1, '2026-02-08 18:07:34', '2026-02-10 23:04:55'),
+	(3, 'Aziz Baytekini siktiler', 'aziz-baytekini-siktiler-1770590892780', NULL, '<p>Vezirköprü KYK yurdunda 405 numaralı odada kalan Aziz Baytekin, oda arkadaşı <strong>Yusuf Keski</strong> ve <strong>Ufuk Bildik</strong> tarafından Gangbang tecavüze uğradı. Bu olaydan sonra Oturma ve yürüme yetisini kaybeden aziz baytekin şuanda sadece yatabiliyor.</p><p></p><p>https://www.youtube.com/watch?v=yr7mYngK1Xc&amp;pp=ygUWa8O8cnQgdHJhdmVzdGkgxZ9hcmvEsdIHCQmRCgGHKiGM7w%3D%3D</p>', '/uploads/1770578141018.jpg', 3, 2, 'published', 14, 1, 1, '2026-02-08 19:15:41', '2026-02-10 23:04:54'),
+	(4, 'Bakire Anteplinin Hazin Sonu ...', 'bakire-anteplinin-hazin-sonu-1770590909931', NULL, '<p>Antepli bakire genç <strong><u>Erdal Muhittin Sikikalkan,</u></strong> Sultan Taş adlı şahıs tarafından sikilerek öldürüldü. </p>', '/uploads/1770590676323.jpg', 2, 3, 'published', 9, 1, 1, '2026-02-08 22:44:36', '2026-02-10 23:07:31');
 /*!40000 ALTER TABLE `news` ENABLE KEYS */;
 
 -- tablo yapısı dökülüyor nerik_db.settings
@@ -146,10 +147,9 @@ CREATE TABLE IF NOT EXISTS `videos` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- nerik_db.videos: 0 rows tablosu için veriler indiriliyor
+-- nerik_db.videos: 1 rows tablosu için veriler indiriliyor
 /*!40000 ALTER TABLE `videos` DISABLE KEYS */;
 INSERT INTO `videos` (`id`, `title`, `url`, `created_at`) VALUES
-	(1, 'asdasf', 'https://www.youtube.com/embed/aWMdUqyk3Ys&list=RDaWMdUqyk3Ys&start_radio=1', '2026-02-08 20:27:34'),
 	(2, 'asdasd', 'https://www.youtube.com/embed/yr7mYngK1Xc', '2026-02-08 20:28:06');
 /*!40000 ALTER TABLE `videos` ENABLE KEYS */;
 

@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { NewsService } from '../../services/news';
-import { DomSanitizer, SafeHtml, Title } from '@angular/platform-browser'; // Title eklendi
+import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser'; // <-- Meta EKLENDİ
 
 @Component({
   selector: 'app-news-detail',
@@ -16,18 +16,18 @@ export class NewsDetailComponent implements OnInit {
   safeContent: SafeHtml = ''; 
   baseUrl = 'http://localhost:3000';
   loading = true;
-  currentUrl: string = ''; // Paylaşım için link
+  currentUrl: string = '';
 
   constructor(
     private route: ActivatedRoute,
     private newsService: NewsService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef,
-    private titleService: Title // SEO Başlığı için servis
+    private titleService: Title,
+    private meta: Meta // <-- Servis EKLENDİ
   ) {}
 
   ngOnInit() {
-    // Şu anki sayfa linkini al
     this.currentUrl = window.location.href;
 
     this.route.paramMap.subscribe(params => {
@@ -48,13 +48,15 @@ export class NewsDetailComponent implements OnInit {
       next: (data) => {
         this.news = data;
         
-        // HTML İçeriğini güvenli yap
         if (this.news.content) {
              this.safeContent = this.sanitizer.bypassSecurityTrustHtml(this.news.content);
         }
 
-        // Tarayıcı Sekme Başlığını Değiştir (SEO)
+        // 1. Tarayıcı Başlığını Değiştir
         this.titleService.setTitle(`${this.news.title} - NERİK HABER`);
+
+        // 2. META ETİKETLERİNİ GÜNCELLE (WhatsApp, Google, Twitter için)
+        this.updateMetaTags();
 
         this.loading = false;
         this.cdr.detectChanges();
@@ -67,16 +69,37 @@ export class NewsDetailComponent implements OnInit {
     });
   }
 
-  // --- YENİ EKLENEN FONKSİYONLAR ---
+  // --- YENİ META FONKSİYONU ---
+  updateMetaTags() {
+    // Haber Özeti (Yoksa içeriğin ilk 150 karakteri)
+    const description = this.news.summary || this.news.title;
+    // Haber Resmi (Yoksa varsayılan site logosu)
+    const image = this.news.image_path ? this.baseUrl + this.news.image_path : 'assets/logo.png';
 
-  // Linki Kopyala
+    // Standart Meta Etiketleri
+    this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ name: 'author', content: this.news.author_name || 'Nerik Haber' });
+
+    // Open Graph (WhatsApp, Facebook, LinkedIn)
+    this.meta.updateTag({ property: 'og:title', content: this.news.title });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ property: 'og:url', content: this.currentUrl });
+    this.meta.updateTag({ property: 'og:type', content: 'article' });
+
+    // Twitter Kartları
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: this.news.title });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
+  }
+
   copyLink() {
     navigator.clipboard.writeText(this.currentUrl).then(() => {
       alert('Link kopyalandı! Arkadaşına gönderebilirsin.');
     });
   }
 
-  // WhatsApp Paylaş
   shareWhatsapp() {
     const text = encodeURIComponent(`${this.news.title}\nHaberi oku: ${this.currentUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
